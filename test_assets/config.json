@@ -1,0 +1,12 @@
+[
+  {
+    "type": "xpath",
+    "label": "links-urls",
+    "query": "//a/@href"
+  },
+  {
+    "type": "css",
+    "label": "title",
+    "query": "title"
+  }
+]

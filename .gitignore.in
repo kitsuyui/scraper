@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "${0%/*}" && exec > .gitignore
+gitignore.io() { curl -L -s https://www.gitignore.io/api/"$*"; }
+# gibo: https://github.com/simonwhitaker/gibo
+# gitignore: https://pypi.python.org/pypi/gitignore 
+gibo Go
