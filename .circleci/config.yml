@@ -1,0 +1,43 @@
+version: 2
+jobs:
+  test:
+    working_directory: /workdir
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          command: |
+            docker create -v /root --name sources tianon/true
+            docker cp "$PWD/." sources:/root/
+            docker run --rm --volumes-from sources -w /root golang:latest sh -c ./test.sh
+
+  release:
+    working_directory: /workdir
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          command: |
+            docker create -v /root --name sources tianon/true
+            docker cp "$PWD/." sources:/root/
+            docker run --rm --volumes-from sources -w /root tcnksm/gox sh -c ./build.sh
+            mkdir -p /tmp/artifacts
+            docker cp sources:/root/build/ /tmp/artifacts
+      - store_artifacts:
+          path: /tmp/artifacts
+
+workflows:
+  version: 2
+  build_and_release:
+    jobs:
+      - test
+      - release:
+          requires:
+            - test
+          filters:
+            branches:
+              only: release
