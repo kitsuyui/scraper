@@ -55,7 +55,7 @@ $ scraper -c table-scraper-config.json < table.html
     "type": "table-xpath",
     "label": "Tables",
     "query": "//table",
-    "Result": [
+    "results": [
       [
         ["a","b","c","d"],
         ["e","f","f","g"],

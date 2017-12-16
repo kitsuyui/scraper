@@ -23,18 +23,18 @@ func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
 	if sr.results.TableResult != nil {
 		return json.Marshal(&struct {
 			recipe
-			Result [][][]string
+			Results [][][]string `json:"results"`
 		}{
-			recipe: sr.recipe,
-			Result: *sr.results.TableResult,
+			recipe:  sr.recipe,
+			Results: *sr.results.TableResult,
 		})
 	}
 	return json.Marshal(&struct {
 		recipe
-		Result []string
+		Results []string `json:"results"`
 	}{
-		recipe: sr.recipe,
-		Result: *sr.results.PlainResult,
+		recipe:  sr.recipe,
+		Results: *sr.results.PlainResult,
 	})
 }
 
