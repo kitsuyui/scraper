@@ -66,12 +66,20 @@ func TestBasics(t *testing.T) {
 	r := &recipes{
 		{
 			Type:  "xpath",
-			Query: "//title", // Invalid XPath
+			Query: "//title",
 			Label: "title",
 		}, {
 			Type:  "css",
-			Query: "title", // Invalid CSS Selector
+			Query: "title",
 			Label: "title",
+		}, {
+			Type:  "table-css",
+			Query: "table",
+			Label: "table1",
+		}, {
+			Type:  "table-xpath",
+			Query: "//table",
+			Label: "table1",
 		},
 	}
 	cr, err := r.compile()
@@ -83,6 +91,30 @@ func TestBasics(t *testing.T) {
   <head>
     <title>test passed</title>
   </head>
+	<body>
+		<table border=1>
+		  <tr><td>a</td><td>b</td><td>c</td></tr>
+		  <tr><td>d</td><td>e</td><td>f</td></tr>
+		</table>
+		<hr>
+		<table border=1>
+		  <tr><td>a</td><td>b</td><td>c</td><td rowspan="2">d</td></tr>
+		  <tr><td>e</td><td colspan="2">f</td></tr>
+		  <tr><td>i</td><td>j</td><td>k</td><td>l</td></tr>
+		</table>
+		<hr>
+		<table border=1>
+		  <tr><td>a</td><td>b</td><td rowspan="2" bgcolor="pink">c</td><td>d</td></tr>
+		  <tr><td>e</td><td colspan="3" bgcolor="yellow">f</td></tr>
+		  <tr><td>i</td><td>j</td><td>k</td><td>l</td></tr>
+		</table>
+		<hr>
+		<table border=1>
+		  <tr><td>a</td><td>b</td><td>c</td><td>d</td></tr>
+		  <tr><td>e</td><td rowspan="2" colspan="2">f</td><td>g</td></tr>
+		  <tr><td>h</td><td>i</td></tr>
+		</table>
+	</body>
 </html>
 `)
 	n, err := htmlquery.Parse(input)

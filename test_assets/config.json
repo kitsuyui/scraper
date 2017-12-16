@@ -8,5 +8,15 @@
     "type": "css",
     "label": "title",
     "query": "title"
+  },
+  {
+    "label": "table-xpath",
+    "query": "//table",
+    "type": "table-xpath"
+  },
+  {
+    "label": "table-css",
+    "query": "table",
+    "type": "table-css"
   }
 ]
