@@ -7,7 +7,7 @@
 ### Scraping with XPath / CSS Selector
 
 ```
-$ wget http://example.com/ -o index.html
+$ wget http://example.com/ -O index.html
 $ cat <<'EOF'> scraper-config.json
 [
   {"type": "css", "label": "Title", "query": "h1"},
