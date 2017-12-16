@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -13,9 +14,28 @@ type recipe struct {
 	Query string `json:"query"`
 }
 
-type extractedResult struct {
+type scrapeResult struct {
 	recipe
-	Results []string `json:"results"`
+	results *extractResult
+}
+
+func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
+	if sr.results.TableResult != nil {
+		return json.Marshal(&struct {
+			recipe
+			Result [][][]string
+		}{
+			recipe: sr.recipe,
+			Result: *sr.results.TableResult,
+		})
+	}
+	return json.Marshal(&struct {
+		recipe
+		Result []string
+	}{
+		recipe: sr.recipe,
+		Result: *sr.results.PlainResult,
+	})
 }
 
 type recipes []recipe
@@ -28,7 +48,12 @@ type compiledRecipe struct {
 type compiledRecipes []compiledRecipe
 
 type scraper interface {
-	extract(n *html.Node) (ret []string)
+	extract(*html.Node) *extractResult
+}
+
+type extractResult struct {
+	PlainResult *[]string
+	TableResult *[][][]string
 }
 
 func (rs recipes) compile() (compiledRecipes, error) {
@@ -68,15 +93,32 @@ func (r recipe) compile() (*compiledRecipe, error) {
 			recipe:  r,
 			scraper: scraper,
 		}, nil
+	} else if r.Type == "table-xpath" {
+		scraper, err := tableXPathScraperFromQuery(r.Query)
+		if err != nil {
+			return nil, err
+		}
+		return &compiledRecipe{
+			recipe:  r,
+			scraper: scraper,
+		}, nil
+	} else if r.Type == "table-css" {
+		scraper, err := tableCSSSelectorScraperFromQuery(r.Query)
+		if err != nil {
+			return nil, err
+		}
+		return &compiledRecipe{
+			recipe:  r,
+			scraper: scraper,
+		}, nil
 	}
 	return nil, fmt.Errorf("Unimplemented type: %s", r.Type)
 }
 
 // ExtractAll do every recipe.
-func (crs compiledRecipes) extractAll(n *html.Node) (ers []extractedResult) {
+func (crs compiledRecipes) extractAll(n *html.Node) (ers []scrapeResult) {
 	for _, cr := range crs {
-		e := cr.scraper.extract(n)
-		er := &extractedResult{recipe: cr.recipe, Results: e}
+		er := &scrapeResult{recipe: cr.recipe, results: cr.scraper.extract(n)}
 		ers = append(ers, *er)
 	}
 	return ers

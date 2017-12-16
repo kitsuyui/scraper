@@ -18,11 +18,12 @@ func xPathScraperFromQuery(query string) (*xPathScraper, error) {
 	return &xPathScraper{query: expr}, nil
 }
 
-func (x xPathScraper) extract(n *html.Node) (ret []string) {
+func (x xPathScraper) extract(n *html.Node) *extractResult {
 	nav := htmlquery.CreateXPathNavigator(n)
 	iter := x.query.Evaluate(nav).(*xpath.NodeIterator)
+	var ret []string
 	for iter.MoveNext() {
 		ret = append(ret, iter.Current().Value())
 	}
-	return ret
+	return &extractResult{PlainResult: &ret}
 }

@@ -19,11 +19,12 @@ func cssSelectorScraperFromQuery(query string) (*cssSelectorScraper, error) {
 	return &cssSelectorScraper{query: expr}, nil
 }
 
-func (c cssSelectorScraper) extract(n *html.Node) (ret []string) {
+func (c cssSelectorScraper) extract(n *html.Node) *extractResult {
+	var ret []string
 	for _, m := range c.query.MatchAll(n) {
 		ret = append(ret, extractTextFromNodeRecursively(m))
 	}
-	return ret
+	return &extractResult{PlainResult: &ret}
 }
 
 func extractTextFromNodeRecursively(n *html.Node) string {
