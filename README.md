@@ -1,5 +1,7 @@
 # Scraper: Swiss Army Knife for Web scraping
 
+[![CircleCI Status](https://circleci.com/gh/kitsuyui/scraper.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/kitsuyui/scraper)
+
 ## Usage
 
 ```
