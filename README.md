@@ -16,19 +16,23 @@ $ cat <<'EOF'> scraper-config.json
 EOF
 $ scraper < index.html
 [
-  {
-    "type": "css",
-    "label": "Title",
-    "query": "h1",
-    "results": ["Example Domain"]
-  },
-  {
-    "type": "xpath",
-    "label": "LinkURL",
-    "query": "//a/@href",
-    "results": ["http://www.iana.org/domains/example"]
-  }
-]
+   {
+     "type": "css",
+     "label": "Title",
+     "query": "h1",
+     "results": [
+       "Example Domain"
+     ]
+   },
+   {
+     "type": "xpath",
+     "label": "LinkURL",
+     "query": "//a/@href",
+     "results": [
+       "http://www.iana.org/domains/example"
+     ]
+   }
+ ]
 ```
 
 ### Table Scraping
@@ -51,19 +55,19 @@ $ cat <<'EOF'> table-scraper-config.json
 EOF
 $ scraper -c table-scraper-config.json < table.html
 [
-  {
-    "type": "table-xpath",
-    "label": "Tables",
-    "query": "//table",
-    "results": [
-      [
-        ["a","b","c","d"],
-        ["e","f","f","g"],
-        ["h","f","f","i"]
-      ]
-    ]
-  }
-]
+   {
+     "type": "table-xpath",
+     "label": "Tables",
+     "query": "//table",
+     "results": [
+       [
+         ["a", "b", "c", "d"],
+         ["e", "f", "f", "g"],
+         ["h", "f", "f", "i"]
+       ]
+     ]
+   }
+ ]
 ```
 
 ### Options

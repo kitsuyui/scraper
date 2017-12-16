@@ -29,7 +29,9 @@ func scrapeByCompiledRecipes(cr compiledRecipes, input io.Reader, output io.Writ
 		return fmt.Errorf("If this error is occurred, please tell me HTML for adding unit-test case.%s", err)
 	}
 	ers := cr.extractAll(doc)
-	json.NewEncoder(output).Encode(ers)
+	e := json.NewEncoder(output)
+	e.SetIndent(" ", "  ")
+	e.Encode(ers)
 	return nil
 }
 
