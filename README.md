@@ -4,6 +4,8 @@
 
 ## Usage
 
+### Scraping with XPath / CSS Selector
+
 ```
 $ wget http://example.com/ -o index.html
 $ cat <<'EOF'> scraper-config.json
@@ -14,8 +16,53 @@ $ cat <<'EOF'> scraper-config.json
 EOF
 $ scraper < index.html
 [
-  {"type":"css","label":"Title","query":"h1","results":["Example Domain"]},
-  {"type":"xpath","label":"LinkURL","query":"//a/@href","results":["http://www.iana.org/domains/example"]}
+  {
+    "type": "css",
+    "label": "Title",
+    "query": "h1",
+    "results": ["Example Domain"]
+  },
+  {
+    "type": "xpath",
+    "label": "LinkURL",
+    "query": "//a/@href",
+    "results": ["http://www.iana.org/domains/example"]
+  }
+]
+```
+
+### Table Scraping
+
+Table element scraping is also available.
+Obviously it supports colspan/rowspan attributes.
+
+```
+$ cat <<'EOF'> table.html
+<table border=1>
+  <tr><td>a</td><td>b</td><td>c</td><td>d</td></tr>
+  <tr><td>e</td><td rowspan="2" colspan="2">f</td><td>g</td></tr>
+  <tr><td>h</td><td>i</td></tr>
+</table>
+EOF
+$ cat <<'EOF'> table-scraper-config.json
+[
+  {"type": "table-xpath", "label": "Tables", "query": "//table"}
+]
+EOF
+$ scraper -c table-scraper-config.json < table.html
+[
+  {
+    "type": "table-xpath",
+    "label": "Tables",
+    "query": "//table",
+    "Result": [
+      [
+        ["a","b","c","d"],
+        ["e","f","f","g"],
+        ["h","f","f","i"]
+      ]
+    ]
+  }
 ]
 ```
 
