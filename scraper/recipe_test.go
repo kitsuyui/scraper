@@ -62,6 +62,28 @@ func TestXPathInvalid(t *testing.T) {
 	}
 }
 
+func TestTableXPathInvalid(t *testing.T) {
+	_, err := (&recipe{
+		Type:  "table-xpath",
+		Query: "!!!!title", // Invalid XPath
+		Label: "title",
+	}).compile()
+	if err == nil {
+		t.Errorf("Must be error when invalid xpath is passed.")
+	}
+}
+
+func TestTableCSSInvalid(t *testing.T) {
+	_, err := (&recipe{
+		Type:  "table-css",
+		Query: "!!!!title", // Invalid CSS Selector
+		Label: "title",
+	}).compile()
+	if err == nil {
+		t.Errorf("Must be error when invalid css selecter is passed.")
+	}
+}
+
 func TestBasics(t *testing.T) {
 	r := &recipes{
 		{
@@ -115,6 +137,97 @@ func TestBasics(t *testing.T) {
 		  <tr><td>h</td><td>i</td></tr>
 		</table>
 	</body>
+</html>
+`)
+	n, err := htmlquery.Parse(input)
+	if err != nil {
+		t.Errorf("This is valid HTML File")
+	}
+	results := cr.extractAll(n)
+	if len(results) != len(*r) {
+		t.Errorf("Not match size results and recipes")
+	}
+}
+
+func TestBasicsTables(t *testing.T) {
+	r := &recipes{{
+		Type:  "table-xpath",
+		Query: "//table",
+		Label: "table1",
+	}, {
+		Type:  "table-css",
+		Query: "table",
+		Label: "table1",
+	}}
+	cr, err := r.compile()
+	if err != nil {
+		t.Errorf("Must not be error on this recipe.")
+	}
+	input := bytes.NewBufferString(`
+<html>
+  <head>
+    <title>test passed</title>
+  </head>
+	<body>
+		<table border=1>
+		  <tr><td>a</td><td>b</td><td>c</td><td>d</td></tr>
+		  <tr><td>e</td><td rowspan="2" colspan="2">f</td><td>g</td></tr>
+		  <tr><td>h</td><td>i</td></tr>
+		</table>
+	</body>
+</html>
+`)
+	n, err := htmlquery.Parse(input)
+	if err != nil {
+		t.Errorf("This is valid HTML File")
+	}
+	results := cr.extractAll(n)
+	if len(results) != len(*r) {
+		t.Errorf("Not match size results and recipes")
+	}
+	for _, rows := range *results[0].results.TableResult {
+		if len(rows) != 3 {
+			t.Errorf("Not match size table rows")
+		}
+		for _, row := range rows {
+			if len(row) != 4 {
+				t.Errorf("Not match size table columns")
+			}
+		}
+		expects := [][]string{
+			{"a", "b", "c", "d"},
+			{"e", "f", "f", "g"},
+			{"h", "f", "f", "i"},
+		}
+		for i, expectRow := range expects {
+			for j, cell := range expectRow {
+				if rows[i][j] != cell {
+					t.Errorf("Not match table cell, expect %s != result %s", cell, rows[i][j])
+				}
+			}
+		}
+	}
+}
+
+func TestInvalidRowspanColspan(t *testing.T) {
+	r := &recipes{
+		{
+			Type:  "table-xpath",
+			Query: "//table",
+			Label: "table1",
+		},
+	}
+	cr, err := r.compile()
+	if err != nil {
+		t.Errorf("Must not be error on this recipe.")
+	}
+	input := bytes.NewBufferString(`
+<html>
+	<table border=1>
+	  <tr><td>a</td><td>b</td><td>c</td><td>d</td></tr>
+	  <tr><td>e</td><td rowspan="a" colspan="b">f</td><td>g</td></tr>
+	  <tr><td>h</td><td>i</td></tr>
+	</table>
 </html>
 `)
 	n, err := htmlquery.Parse(input)
