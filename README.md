@@ -1,7 +1,7 @@
 # Scraper: Swiss Army Knife for Web scraping
 
 [![CircleCI Status](https://circleci.com/gh/kitsuyui/scraper.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/kitsuyui/scraper)
-[![Codecov Status](https://codecov.io/gh/kitsuyu/scraper/branch/master/graph/badge.svg)](https://codecov.io/github/kitsuyui/scraper/)
+[![Codecov Status](https://img.shields.io/codecov/c/github/kitsuyui/scraper.svg)](https://codecov.io/github/kitsuyui/scraper/)
 
 ## Usage
 
