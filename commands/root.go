@@ -17,6 +17,8 @@ var inputFilepath string
 var outputFilepath string
 var configFilepath string
 
+var exit = os.Exit
+
 func init() {
 	CLIRoot.AddCommand(ValidateConfig)
 	cobra.OnInitialize(initConfig)
@@ -36,7 +38,7 @@ func initConfig() {
 		input, err = os.Open(inputFilepath)
 		if err != nil {
 			fmt.Println(err.Error())
-			os.Exit(1)
+			exit(1)
 		}
 	}
 	if outputFilepath == "" {
@@ -45,16 +47,17 @@ func initConfig() {
 		output, err = os.Open(outputFilepath)
 		if err != nil {
 			fmt.Println(err.Error())
-			os.Exit(1)
+			exit(1)
 		}
 	}
 	confFile, err = os.Open(configFilepath)
 	if err != nil {
 		fmt.Println(err.Error())
-		os.Exit(1)
+		exit(1)
 	}
 }
 
+// CLIRoot is top Cobra Object of scraper command
 var CLIRoot = &cobra.Command{
 	Use:  `scraper`,
 	Long: `Scraper: Swiss Army Knife for Web scraping`,
@@ -62,7 +65,7 @@ var CLIRoot = &cobra.Command{
 		err := scraper.ScrapeByConfFile(confFile, input, output)
 		if err != nil {
 			fmt.Println(err.Error())
-			os.Exit(1)
+			exit(1)
 		}
 	},
 }
@@ -75,7 +78,7 @@ var ValidateConfig = &cobra.Command{
 		err := scraper.ValidateConfigFile(confFile)
 		if err != nil {
 			fmt.Println(err.Error())
-			os.Exit(1)
+			exit(1)
 		}
 		fmt.Println("OK")
 	},

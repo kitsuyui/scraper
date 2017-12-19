@@ -96,3 +96,21 @@ func TestValidConfig(t *testing.T) {
 		t.Errorf("Must not be error on config file: %s", testFilepath)
 	}
 }
+
+func TestInvalidHTML(t *testing.T) {
+	testFilepath := "../test_assets/config.json"
+	testHTMLFilepath := "/"
+	invalidConf, err := os.Open(testFilepath)
+	if err != nil {
+		t.Errorf("Must be opened %s", testFilepath)
+	}
+	input, err := os.Open(testHTMLFilepath)
+	if err != nil {
+		t.Errorf("Must be opened %s", testHTMLFilepath)
+	}
+	output := bufio.NewWriter(&bytes.Buffer{})
+	err = ScrapeByConfFile(invalidConf, input, output)
+	if err == nil {
+		t.Errorf("Must be error on invalid config file: %s", testFilepath)
+	}
+}
