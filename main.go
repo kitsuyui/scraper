@@ -7,9 +7,11 @@ import (
 	"./commands"
 )
 
+var exit = os.Exit
+
 func main() {
 	if err := commands.CLIRoot.Execute(); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		exit(1)
 	}
 }
