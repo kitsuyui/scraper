@@ -2,6 +2,23 @@
 
 [![CircleCI Status](https://circleci.com/gh/kitsuyui/scraper.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/kitsuyui/scraper)
 [![Codecov Status](https://img.shields.io/codecov/c/github/kitsuyui/scraper.svg)](https://codecov.io/github/kitsuyui/scraper/)
+[![Github All Releases](https://img.shields.io/github/downloads/kitsuyui/scraper/total.svg)](https://github.com/kitsuyui/scraper/releases/latest)
+
+# Installation
+
+You can download executable static binary from https://github.com/kitsuyui/scraper/releases/latest .
+
+- typically Linux ... download [scraper_darwin_amd64](https://github.com/kitsuyui/scraper/releases/download/0.0.4/scraper_darwin_amd64)
+- typically macOS ... download [scraper_linux_amd64](https://github.com/kitsuyui/scraper/releases/download/0.0.4/scraper_linux_amd64)
+- typically Windows ... download [scraper_windows_amd64.exe](https://github.com/kitsuyui/scraper/releases/download/0.0.4/scraper_windows_amd64.exe)
+
+and then just you have to do is adding PATH and permitting it to executable.
+
+```
+$ target=scraper_darwin_amd64  # executable binary you downloaded.
+$ cp "./$target" /usr/bin/scraper
+$ chmod +x /usr/bin/scraper
+```
 
 ## Usage
 
