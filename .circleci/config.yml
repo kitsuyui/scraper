@@ -9,8 +9,8 @@ jobs:
       - setup_remote_docker
       - run:
           command: |
-            ./test.sh
-            ./coverage.sh
+            ./bin/test.sh
+            ./bin/coverage.sh
             bash <(curl -s https://codecov.io/bash)
 
   release:
@@ -24,7 +24,7 @@ jobs:
           command: |
             docker create -v /root --name sources tianon/true
             docker cp "$PWD/." sources:/root/
-            docker run --rm --volumes-from sources -w /root tcnksm/gox sh -c ./build.sh
+            docker run --rm --volumes-from sources -w /root tcnksm/gox sh -c ./bin/build.sh
             mkdir -p /tmp/artifacts
             docker cp sources:/root/build/ /tmp/artifacts
       - store_artifacts:

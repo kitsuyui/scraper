@@ -123,13 +123,13 @@ $ go build -o build/scraper main.go
 ### For cross-platform
 
 ```
-$ ./build.sh
+$ ./bin/build.sh
 ```
 
 #### with Docker
 
 ```console
-$ docker run --rm -v "$(pwd)":/root -w /root tcnksm/gox sh -c "./build.sh"
+$ docker run --rm -v "$(pwd)":/root -w /root tcnksm/gox sh -c "./bin/build.sh"
 ```
 
 ## LICENSE
