@@ -111,6 +111,6 @@ func TestInvalidHTML(t *testing.T) {
 	output := bufio.NewWriter(&bytes.Buffer{})
 	err = ScrapeByConfFile(invalidConf, input, output)
 	if err == nil {
-		t.Errorf("Must be error on invalid config file: %s", testFilepath)
+		t.Errorf("Must be error on invalid HTML file: %s", testHTMLFilepath)
 	}
 }
