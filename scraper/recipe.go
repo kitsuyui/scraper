@@ -1,10 +1,13 @@
 package scraper
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
+	htmlquery "github.com/antchfx/xquery/html"
 	"golang.org/x/net/html"
 )
 
@@ -41,14 +44,19 @@ func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
 type recipes []recipe
 
 type compiledRecipe struct {
-	scraper scraper
+	domScraper  domScraper
+	textScraper textScraper
 	recipe
 }
 
 type compiledRecipes []compiledRecipe
 
-type scraper interface {
-	extract(*html.Node) *extractResult
+type textScraper interface {
+	extractFromText(string) *extractResult
+}
+
+type domScraper interface {
+	extractFromNode(*html.Node) *extractResult
 }
 
 type extractResult struct {
@@ -76,50 +84,75 @@ func (rs recipes) compile() (compiledRecipes, error) {
 
 func (r recipe) compile() (*compiledRecipe, error) {
 	if r.Type == "xpath" {
-		scraper, err := xPathScraperFromQuery(r.Query)
+		domScraper, err := xPathScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
 		}
 		return &compiledRecipe{
-			recipe:  r,
-			scraper: scraper,
+			recipe:     r,
+			domScraper: domScraper,
 		}, nil
 	} else if r.Type == "css" {
-		scraper, err := cssSelectorScraperFromQuery(r.Query)
+		domScraper, err := cssSelectorScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
 		}
 		return &compiledRecipe{
-			recipe:  r,
-			scraper: scraper,
+			recipe:     r,
+			domScraper: domScraper,
 		}, nil
 	} else if r.Type == "table-xpath" {
-		scraper, err := tableXPathScraperFromQuery(r.Query)
+		domScraper, err := tableXPathScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
 		}
 		return &compiledRecipe{
-			recipe:  r,
-			scraper: scraper,
+			recipe:     r,
+			domScraper: domScraper,
 		}, nil
 	} else if r.Type == "table-css" {
-		scraper, err := tableCSSSelectorScraperFromQuery(r.Query)
+		domScraper, err := tableCSSSelectorScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
 		}
 		return &compiledRecipe{
-			recipe:  r,
-			scraper: scraper,
+			recipe:     r,
+			domScraper: domScraper,
+		}, nil
+	} else if r.Type == "regex" {
+		textScraper, err := regularExpressionScraperFromQuery(r.Query)
+		if err != nil {
+			return nil, err
+		}
+		return &compiledRecipe{
+			recipe:      r,
+			textScraper: textScraper,
 		}, nil
 	}
 	return nil, fmt.Errorf("Unimplemented type: %s", r.Type)
 }
 
-// ExtractAll do every recipe.
-func (crs compiledRecipes) extractAll(n *html.Node) (ers []scrapeResult) {
-	for _, cr := range crs {
-		er := &scrapeResult{recipe: cr.recipe, results: cr.scraper.extract(n)}
-		ers = append(ers, *er)
+func (crs compiledRecipes) extractAll(input io.Reader) ([]scrapeResult, error) {
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(input)
+	if err != nil {
+		return nil, err
 	}
-	return ers
+	htmlText := buf.String()
+	input = strings.NewReader(htmlText)
+	doc, err := htmlquery.Parse(input)
+	if err != nil {
+		return nil, fmt.Errorf("If this error is occurred, please tell me HTML for adding unit-test case.%s", err)
+	}
+	var ers []scrapeResult
+	for _, cr := range crs {
+		if cr.textScraper != nil {
+			er := &scrapeResult{recipe: cr.recipe, results: cr.textScraper.extractFromText(htmlText)}
+			ers = append(ers, *er)
+		} else if cr.domScraper != nil {
+			er := &scrapeResult{recipe: cr.recipe, results: cr.domScraper.extractFromNode(doc)}
+			ers = append(ers, *er)
+		}
+	}
+	return ers, nil
 }

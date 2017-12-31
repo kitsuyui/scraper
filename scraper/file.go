@@ -2,10 +2,7 @@ package scraper
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
-
-	htmlquery "github.com/antchfx/xquery/html"
 )
 
 // ValidateConfigFile provides syntax-check for scraper config file.
@@ -24,11 +21,10 @@ func ScrapeByConfFile(confFile io.Reader, input io.Reader, output io.Writer) err
 }
 
 func scrapeByCompiledRecipes(cr compiledRecipes, input io.Reader, output io.Writer) error {
-	doc, err := htmlquery.Parse(input)
+	ers, err := cr.extractAll(input)
 	if err != nil {
-		return fmt.Errorf("If this error is occurred, please tell me HTML for adding unit-test case.%s", err)
+		return err
 	}
-	ers := cr.extractAll(doc)
 	e := json.NewEncoder(output)
 	e.SetIndent(" ", "  ")
 	e.Encode(ers)

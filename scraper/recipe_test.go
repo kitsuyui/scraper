@@ -3,8 +3,6 @@ package scraper
 import (
 	"bytes"
 	"testing"
-
-	htmlquery "github.com/antchfx/xquery/html"
 )
 
 func TestNotImplementedType(t *testing.T) {
@@ -102,6 +100,10 @@ func TestBasics(t *testing.T) {
 			Type:  "table-xpath",
 			Query: "//table",
 			Label: "table1",
+		}, {
+			Type:  "regex",
+			Query: "Cat, (.*?), Snake",
+			Label: "regextest",
 		},
 	}
 	cr, err := r.compile()
@@ -114,6 +116,7 @@ func TestBasics(t *testing.T) {
     <title>test passed</title>
   </head>
 	<body>
+		<dummy>Cat, Dog, Snake</dummy>
 		<table border=1>
 		  <tr><td>a</td><td>b</td><td>c</td></tr>
 		  <tr><td>d</td><td>e</td><td>f</td></tr>
@@ -139,13 +142,21 @@ func TestBasics(t *testing.T) {
 	</body>
 </html>
 `)
-	n, err := htmlquery.Parse(input)
+	results, err := cr.extractAll(input)
 	if err != nil {
 		t.Errorf("This is valid HTML File")
 	}
-	results := cr.extractAll(n)
 	if len(results) != len(*r) {
 		t.Errorf("Not match size results and recipes")
+	}
+	if (*(results[0].results.PlainResult))[0] != "test passed" {
+		t.Errorf("Invalid")
+	}
+	if (*(results[1].results.PlainResult))[0] != "test passed" {
+		t.Errorf("Invalid")
+	}
+	if (*(results[4].results.PlainResult))[0] != "Cat, Dog, Snake" {
+		t.Errorf("Invalid")
 	}
 }
 
@@ -177,11 +188,10 @@ func TestBasicsTables(t *testing.T) {
 	</body>
 </html>
 `)
-	n, err := htmlquery.Parse(input)
+	results, err := cr.extractAll(input)
 	if err != nil {
 		t.Errorf("This is valid HTML File")
 	}
-	results := cr.extractAll(n)
 	if len(results) != len(*r) {
 		t.Errorf("Not match size results and recipes")
 	}
@@ -230,11 +240,10 @@ func TestInvalidRowspanColspan(t *testing.T) {
 	</table>
 </html>
 `)
-	n, err := htmlquery.Parse(input)
+	results, err := cr.extractAll(input)
 	if err != nil {
 		t.Errorf("This is valid HTML File")
 	}
-	results := cr.extractAll(n)
 	if len(results) != len(*r) {
 		t.Errorf("Not match size results and recipes")
 	}
@@ -255,5 +264,16 @@ func TestInvalidRecipe(t *testing.T) {
 	_, err := r.compile()
 	if err == nil {
 		t.Errorf("Must be error on this recipe.")
+	}
+}
+
+func TestRegexInvalid(t *testing.T) {
+	_, err := (&recipe{
+		Type:  "regex",
+		Query: "(.*?", // Invalid CSS Selector
+		Label: "something",
+	}).compile()
+	if err == nil {
+		t.Errorf("Must be error when invalid regular expression is passed.")
 	}
 }

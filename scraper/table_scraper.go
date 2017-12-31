@@ -26,7 +26,7 @@ func tableXPathScraperFromQuery(query string) (*tableXPathScraper, error) {
 	return &tableXPathScraper{query: expr}, nil
 }
 
-func (x tableXPathScraper) extract(n *html.Node) *extractResult {
+func (x tableXPathScraper) extractFromNode(n *html.Node) *extractResult {
 	var ret [][][]string
 	for _, elem := range htmlquery.Find(n, x.query.String()) {
 		k := extractTable(elem)
@@ -43,7 +43,7 @@ func tableCSSSelectorScraperFromQuery(query string) (*tableCSSSelectorScraper, e
 	return &tableCSSSelectorScraper{query: expr}, nil
 }
 
-func (c tableCSSSelectorScraper) extract(n *html.Node) *extractResult {
+func (c tableCSSSelectorScraper) extractFromNode(n *html.Node) *extractResult {
 	var ret [][][]string
 	for _, m := range c.query.MatchAll(n) {
 		ret = append(ret, extractTable(m))
