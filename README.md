@@ -88,6 +88,28 @@ $ scraper -c table-scraper-config.json < table.html
  ]
 ```
 
+### Regular Expression Scraping
+
+```
+$ wget http://example.com/ -O index.html
+$ cat <<'EOF'> scraper-config.json
+[
+  {"type": "regex", "label": "Description", "query": "This domain is .+? to be used for .+?\\."}
+]
+EOF
+$ scraper < index.html
+[
+  {"type": "regex",
+   "label": "Description",
+   "query": "This domain is .+? to be used for .+?\\."}
+]
+```
+
+### Composable
+
+Obviously these recipes are mixable.
+You can scrape all at once with one-config by writing these target.
+
 ### Options
 
 ```
