@@ -8,9 +8,9 @@
 
 You can download executable static binary from https://github.com/kitsuyui/scraper/releases/latest .
 
-- Typically Linux ... Download scraper_darwin_amd64.
-- Typically macOS ... Download scraper_linux_amd64.
-- Typically Windows ... Download scraper_windows_amd64.exe
+- typically Linux ... download scraper_darwin_amd64.
+- typically macOS ... download scraper_linux_amd64.
+- typically Windows ... download scraper_windows_amd64.exe
 
 and then just you have to do is adding PATH and permitting it to executable.
 
@@ -99,9 +99,14 @@ $ cat <<'EOF'> scraper-config.json
 EOF
 $ scraper < index.html
 [
-  {"type": "regex",
-   "label": "Description",
-   "query": "This domain is .+? to be used for .+?\\."}
+   {
+     "type": "regex",
+     "label": "Description",
+     "query": "This domain is .+? to be used for .+?\\.",
+     "results": [
+       "This domain is established to be used for illustrative examples in documents."
+     ]
+   }
 ]
 ```
 
