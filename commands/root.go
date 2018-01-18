@@ -20,14 +20,18 @@ var configFilepath string
 var exit = os.Exit
 
 func init() {
-	CLIRoot.AddCommand(ValidateConfig)
-	cobra.OnInitialize(initConfig)
-	CLIRoot.PersistentFlags().StringVarP(
+	// cobra.OnInitialize(initConfig)
+	CLIRoot.Flags().StringVarP(
 		&configFilepath, "configFile", "c", "scraper-config.json", "config file")
-	CLIRoot.PersistentFlags().StringVarP(
+	CLIRoot.Flags().StringVarP(
 		&inputFilepath, "in", "i", "", "input file (default STDIN)")
-	CLIRoot.PersistentFlags().StringVarP(
+	CLIRoot.Flags().StringVarP(
 		&outputFilepath, "out", "o", "", "output file (default STDOUT)")
+}
+
+func init() {
+	CLIRoot.AddCommand(ValidateConfig)
+	CLIRoot.AddCommand(Server)
 }
 
 func initConfig() {
@@ -62,24 +66,11 @@ var CLIRoot = &cobra.Command{
 	Use:  `scraper`,
 	Long: `Scraper: Swiss Army Knife for Web scraping`,
 	Run: func(cmd *cobra.Command, args []string) {
+		initConfig()
 		err := scraper.ScrapeByConfFile(confFile, input, output)
 		if err != nil {
 			fmt.Println(err.Error())
 			exit(1)
 		}
-	},
-}
-
-// ValidateConfig is a command for checking syntax errors in scraping configuration.
-var ValidateConfig = &cobra.Command{
-	Use:   `validate`,
-	Short: `Validate config file`,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := scraper.ValidateConfigFile(confFile)
-		if err != nil {
-			fmt.Println(err.Error())
-			exit(1)
-		}
-		fmt.Println("OK")
 	},
 }
