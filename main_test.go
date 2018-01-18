@@ -12,6 +12,6 @@ func TestMain(t *testing.T) {
 			t.Error("exit code Must be 1")
 		}
 	}
-	commands.CLIRoot.SetArgs([]string{"invalid-comand"})
+	commands.CLIRoot.SetArgs([]string{"invalid-command"})
 	main()
 }
