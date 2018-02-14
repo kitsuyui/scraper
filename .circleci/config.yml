@@ -1,7 +1,7 @@
 version: 2
 jobs:
   test:
-    working_directory: /workdir
+    working_directory: /go/src/github.com/kitsuyui/scraper
     docker:
       - image: golang:latest
     steps:
@@ -14,19 +14,20 @@ jobs:
             bash <(curl -s https://codecov.io/bash)
 
   release:
-    working_directory: /workdir
+    working_directory: /go/src/github.com/kitsuyui/scraper
     docker:
-      - image: docker:17.05.0-ce-git
+      - image: golang:latest
     steps:
       - checkout
       - setup_remote_docker
       - run:
           command: |
-            docker create -v /root --name sources tianon/true
-            docker cp "$PWD/." sources:/root/
-            docker run --rm --volumes-from sources -w /root tcnksm/gox sh -c ./bin/build.sh
-            mkdir -p /tmp/artifacts
-            docker cp sources:/root/build/ /tmp/artifacts
+            go get github.com/mitchellh/gox
+            go get github.com/tcnksm/ghr
+            BUILD_VERSION="$CIRCLE_TAG" ./bin/build.sh
+            mkdir /tmp/releases
+            mv ./build/scraper_* /tmp/releases
+            ghr -u "$CIRCLE_PROJECT_USERNAME" "$CIRCLE_TAG" /tmp/releases
       - store_artifacts:
           path: /tmp/artifacts
 
@@ -34,10 +35,15 @@ workflows:
   version: 2
   build_and_release:
     jobs:
-      - test
+      - test:
+          filters:
+            tags:
+              only: /.*/
       - release:
           requires:
             - test
           filters:
             branches:
-              only: release
+              ignore: /.*/
+            tags:
+              only: /^v\d+\.\d+.\d+$/

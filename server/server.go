@@ -8,7 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"../scraper"
+	"github.com/kitsuyui/scraper/scraper"
 )
 
 type ServerContext struct {

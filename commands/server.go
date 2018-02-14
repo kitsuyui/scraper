@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"../server"
+	"github.com/kitsuyui/scraper/server"
 	"github.com/spf13/cobra"
 )
 

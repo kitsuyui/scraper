@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"./commands"
+	"github.com/kitsuyui/scraper/commands"
 )
 
 func TestMain(t *testing.T) {
