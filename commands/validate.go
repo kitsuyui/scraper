@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"../scraper"
+	"github.com/kitsuyui/scraper/scraper"
 	"github.com/spf13/cobra"
 )
 

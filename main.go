@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"./commands"
+	"github.com/kitsuyui/scraper/commands"
 )
 
 var exit = os.Exit
