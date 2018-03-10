@@ -3,6 +3,7 @@
 [![CircleCI Status](https://circleci.com/gh/kitsuyui/scraper.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/kitsuyui/scraper)
 [![Codecov Status](https://img.shields.io/codecov/c/github/kitsuyui/scraper.svg)](https://codecov.io/github/kitsuyui/scraper/)
 [![Github All Releases](https://img.shields.io/github/downloads/kitsuyui/scraper/total.svg)](https://github.com/kitsuyui/scraper/releases/latest)
+[![Docker Pulls](https://img.shields.io/docker/pulls/kitsuyui/scraper.svg)](https://hub.docker.com/r/kitsuyui/scraper/)
 
 # Installation
 
@@ -152,6 +153,14 @@ $ curl example.com | curl -X POST localhost:8080/example.com -d @-
      ]
    }
 ]
+```
+
+## Docker
+
+Docker image for server mode: [kitsuyui/scraper](https://hub.docker.com/r/kitsuyui/scraper/)
+
+```
+$ docker run -p 8080:8080 -it kitsuyui/scraper
 ```
 
 
