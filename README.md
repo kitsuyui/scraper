@@ -115,6 +115,46 @@ $ scraper < index.html
 Obviously these recipes are mixable.
 You can scrape all at once with one-config by writing these target.
 
+### Server mode
+
+### startup
+
+```console
+$ scraper server
+```
+
+### Put configuration
+
+```console
+$ curl -X PUT localhost:8080/example.com -d@- <<'EOT'
+[{"type": "xpath", "label": "LinkURL", "query": "//a/@href"}]
+EOT
+```
+
+## Show configuration
+
+```console
+$ curl -X GET localhost:8080/example.com
+[{"type": "xpath", "label": "LinkURL", "query": "//a/@href"}]
+```
+
+## Scraping
+
+```console
+$ curl example.com | curl -X POST localhost:8080/example.com -d @-
+[
+   {
+     "type": "xpath",
+     "label": "LinkURL",
+     "query": "//a/@href",
+     "results": [
+       "http://www.iana.org/domains/example"
+     ]
+   }
+]
+```
+
+
 ### Options
 
 ```
