@@ -124,7 +124,7 @@ You can scrape all at once with one-config by writing these target.
 $ scraper server
 ```
 
-### Put configuration
+### HTTP PUT: Define/Update Configuration
 
 ```console
 $ curl -X PUT localhost:8080/example.com -d@- <<'EOT'
@@ -132,14 +132,14 @@ $ curl -X PUT localhost:8080/example.com -d@- <<'EOT'
 EOT
 ```
 
-## Show configuration
+### HTTP GET: Show configuration
 
 ```console
 $ curl -X GET localhost:8080/example.com
 [{"type": "xpath", "label": "LinkURL", "query": "//a/@href"}]
 ```
 
-## Scraping
+### HTTP POST: Scraping
 
 ```console
 $ curl example.com | curl -X POST localhost:8080/example.com -d @-
