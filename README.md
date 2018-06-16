@@ -9,8 +9,8 @@
 
 You can download executable static binary from https://github.com/kitsuyui/scraper/releases/latest .
 
-- typically Linux ... download scraper_darwin_amd64.
-- typically macOS ... download scraper_linux_amd64.
+- typically Linux ... download scraper_linux_amd64.
+- typically macOS ... download scraper_darwin_amd64.
 - typically Windows ... download scraper_windows_amd64.exe
 
 and then just you have to do is adding PATH and permitting it to executable.
