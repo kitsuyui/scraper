@@ -1,4 +1,4 @@
-FROM gliderlabs/alpine:3.6@sha256:52cfdfbb78e402b1deb7a841afc4faef4043cbd7ca3ef9ef80928f8ba64d748a
+FROM gliderlabs/alpine:3.6@sha256:3a1080eb6179312514da1d7c8c9c46df96e9d9327fe2af82b9119fef66c6c9f0
 ENV \
 SCRAPER_VERSION='v0.1.0' \
 SCRAPER_HASH='b46b2ff9cbfbff8c8f6772cc115362085d8ca454e34683da9971b88f71672fda'
