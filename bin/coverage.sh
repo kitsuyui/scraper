@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 outdir=$(mktemp -d)
+shopt -s dotglob
 
 for pkg in '' 'scraper' 'commands' ; do
   go test \
