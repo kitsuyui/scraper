@@ -195,24 +195,26 @@ func TestBasicsTables(t *testing.T) {
 	if len(results) != len(*r) {
 		t.Errorf("Not match size results and recipes")
 	}
-	for _, rows := range *results[0].results.TableResult {
-		if len(rows) != 3 {
-			t.Errorf("Not match size table rows")
-		}
-		for _, row := range rows {
-			if len(row) != 4 {
-				t.Errorf("Not match size table columns")
+	for k, testCase := range results {
+		for _, rows := range *testCase.results.TableResult {
+			if len(rows) != 3 {
+				t.Errorf("Not match size table rows")
 			}
-		}
-		expects := [][]string{
-			{"a", "b", "c", "d"},
-			{"e", "f", "f", "g"},
-			{"h", "f", "f", "i"},
-		}
-		for i, expectRow := range expects {
-			for j, cell := range expectRow {
-				if rows[i][j] != cell {
-					t.Errorf("Not match table cell, expect %s != result %s", cell, rows[i][j])
+			for _, row := range rows {
+				if len(row) != 4 {
+					t.Errorf("Not match size table columns")
+				}
+			}
+			expects := [][]string{
+				{"a", "b", "c", "d"},
+				{"e", "f", "f", "g"},
+				{"h", "f", "f", "i"},
+			}
+			for i, expectRow := range expects {
+				for j, cell := range expectRow {
+					if rows[i][j] != cell {
+						t.Errorf("Not match table cell, expect %s != result %s in %s", cell, rows[i][j], (*r)[k].Type)
+					}
 				}
 			}
 		}
