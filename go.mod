@@ -9,5 +9,5 @@ require (
 	github.com/antchfx/xquery v0.0.0-20180515051857-ad5b8c7a47b0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3 // indirect
-	golang.org/x/net v0.0.0-20190501013556-9ce7a6920f09
+	golang.org/x/net v0.0.0-20190503194203-f4e77d36d62c
 )
