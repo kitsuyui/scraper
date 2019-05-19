@@ -168,23 +168,20 @@ $ docker run -p 8080:8080 -it kitsuyui/scraper
 
 ```
 $ scraper -h
-Scraper: Swiss Army Knife for Web scraping
+scraper: Swiss army knife for web scraping
 
 Usage:
-  scraper [flags]
-  scraper [command]
+ scraper [-c=<conf>] [-i=<input>]
+ scraper validate [-c=<conf>]
+ scraper server [-d=<conf-dir>] [-H=<host>] [-p=<port>]
 
-Available Commands:
-  help        Help about any command
-  validate    Validate config file
-
-Flags:
-  -c, --configFile string   config file (default "scraper-config.json")
-  -h, --help                help for scraper
-  -i, --in string           input file (default STDIN)
-  -o, --out string          output file (default STDOUT)
-
-Use "scraper [command] --help" for more information about a command.
+Options:
+ -c=<conf> --config=<conf>            Configuration file [default: scraper-config.json].
+ -i=<input> --input=<input>           Input file specified instead of STDIN.
+ -o=<output> --output=<output>        Output file specified instead of STDOUT.
+ -H=<host> --host=<host>              Server mode host [default: 127.0.0.1].
+ -p=<port> --port=<port>              Server mode port [default: 8080].
+ -d=<conf-dir> --conf-dir=<conf-dir>  Configuration directory for server mode [default: .].
 ```
 
 ## Build
@@ -220,5 +217,4 @@ The 3-Clause BSD License. See also LICENSE file.
 -	[antchfx/xpath](https://github.com/antchfx/xpath/) ... [MIT License](https://github.com/antchfx/xpath/blob/master/LICENSE)
 -	[antchfx/xquery](https://github.com/antchfx/xquery/) ... [MIT License](https://github.com/antchfx/xquery/blob/master/LICENSE)
 -	[andybalholm/cascadia](https://github.com/andybalholm/cascadia/) ... [BSD 2-clause "Simplified" License](https://github.com/andybalholm/cascadia/blob/master/LICENSE)
-- [spf13/cobra](https://github.com/spf13/cobra/) ... [Apache License 2.0](https://github.com/spf13/cobra/blob/master/LICENSE.txt)
-  - (windows) [inconshreveable/mousetrap](https://github.com/inconshreveable/mousetrap/) ... [Apache License 2.0](https://github.com/inconshreveable/mousetrap/blob/master/LICENSE)
+- [docopt/docopt-go](https://github.com/docopt/docopt.go) ... [MIT License](https://github.com/docopt/docopt.go/blob/master/LICENSE)
