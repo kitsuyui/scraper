@@ -8,5 +8,5 @@ require (
 	github.com/antchfx/xpath v0.0.0-20190319080838-ce1d48779e67
 	github.com/antchfx/xquery v0.0.0-20180515051857-ad5b8c7a47b0
 	github.com/spf13/cobra v0.0.4
-	golang.org/x/net v0.0.0-20190509224910-a4d6f7feada5
+	golang.org/x/net v0.0.0-20190519003657-3ec191127204
 )
