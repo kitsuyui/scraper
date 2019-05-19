@@ -222,4 +222,3 @@ The 3-Clause BSD License. See also LICENSE file.
 -	[andybalholm/cascadia](https://github.com/andybalholm/cascadia/) ... [BSD 2-clause "Simplified" License](https://github.com/andybalholm/cascadia/blob/master/LICENSE)
 - [spf13/cobra](https://github.com/spf13/cobra/) ... [Apache License 2.0](https://github.com/spf13/cobra/blob/master/LICENSE.txt)
   - (windows) [inconshreveable/mousetrap](https://github.com/inconshreveable/mousetrap/) ... [Apache License 2.0](https://github.com/inconshreveable/mousetrap/blob/master/LICENSE)
-  - (windows) [Microsoft/go-winio](https://github.com/Microsoft/go-winio/) ... [MIT License](https://github.com/Microsoft/go-winio/blob/master/LICENSE)
