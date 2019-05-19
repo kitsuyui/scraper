@@ -2,7 +2,7 @@
 outdir=$(mktemp -d)
 shopt -s dotglob
 
-for pkg in '' 'scraper' 'commands' ; do
+for pkg in '' 'scraper' ; do
   go test \
     -covermode=atomic \
     -coverprofile="$outdir"/"$pkg".out \
