@@ -21,9 +21,9 @@ $ cp "./$target" /usr/bin/scraper
 $ chmod +x /usr/bin/scraper
 ```
 
-## Usage
+# Usage
 
-### Scraping with XPath / CSS Selector
+## Scraping with XPath / CSS Selector
 
 ```
 $ wget http://example.com/ -O index.html
@@ -54,7 +54,7 @@ $ scraper < index.html
  ]
 ```
 
-### Table Scraping
+## Table Scraping
 
 Table element scraping is also available.
 Obviously it supports colspan/rowspan attributes.
@@ -89,7 +89,7 @@ $ scraper -c table-scraper-config.json < table.html
  ]
 ```
 
-### Regular Expression Scraping
+## Regular Expression Scraping
 
 ```
 $ wget http://example.com/ -O index.html
@@ -111,12 +111,27 @@ $ scraper < index.html
 ]
 ```
 
-### Composable
+## Composable
 
 Obviously these recipes are mixable.
 You can scrape all at once with one-config by writing these target.
 
-### Server mode
+## Validate configuration
+
+Configurations can be checked by using subcommand `validate`.
+This sub-command also checks format of each types.
+For example,
+
+- `regex` type will be checked the query is valid regular expression.
+- `xpath` type will be checked the query is valid XPath.
+
+```
+$ scraper validate
+Error: Recipe[0]: expected identifier, found < instead
+exit status 1
+```
+
+## Server mode
 
 ### startup
 
