@@ -10,5 +10,5 @@ require (
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/spf13/cobra v0.0.7
-	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
 )
