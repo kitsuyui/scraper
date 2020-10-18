@@ -8,6 +8,6 @@ require (
 	github.com/antchfx/xpath v1.1.10
 	github.com/antchfx/xquery v0.0.0-20180515051857-ad5b8c7a47b0
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
-	github.com/spf13/cobra v1.0.0
+	github.com/spf13/cobra v1.1.0
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 )
