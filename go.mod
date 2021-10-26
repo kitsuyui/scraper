@@ -9,5 +9,5 @@ require (
 	github.com/antchfx/xquery v0.0.0-20180515051857-ad5b8c7a47b0
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/spf13/cobra v1.2.1
-	golang.org/x/net v0.0.0-20210916014120-12bc252f5db8
+	golang.org/x/net v0.0.0-20211020060615-d418f374d309
 )
