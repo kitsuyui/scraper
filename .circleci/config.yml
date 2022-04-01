@@ -3,7 +3,7 @@ jobs:
   test:
     working_directory: /go/src/github.com/kitsuyui/scraper
     docker:
-      - image: golang:1.18.0-stretch@sha256:aee7be3c60efe6d1396b9d8b857a96eaecbdcc8e6fb74a99372ffe4a50f8fd5c
+      - image: golang:1.18.0-stretch@sha256:2bfe05b7de59354ecf3807e7864bd9cd42eb04dd4d931c58e7b8a7eac60ccc3d
     steps:
       - checkout
       - setup_remote_docker
@@ -16,7 +16,7 @@ jobs:
   release:
     working_directory: /go/src/github.com/kitsuyui/scraper
     docker:
-      - image: golang:1.18.0-stretch@sha256:aee7be3c60efe6d1396b9d8b857a96eaecbdcc8e6fb74a99372ffe4a50f8fd5c
+      - image: golang:1.18.0-stretch@sha256:2bfe05b7de59354ecf3807e7864bd9cd42eb04dd4d931c58e7b8a7eac60ccc3d
     steps:
       - checkout
       - setup_remote_docker
