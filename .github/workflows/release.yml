@@ -3,11 +3,11 @@ name: release
 
 on:
   push:
-    branches:
-      - master
-  release:
-    types:
-      - created
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  create:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   goreleaser:
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-go@v3
 
       - name: release
-        if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
+        if: startsWith(github.event.ref, 'refs/tags')
         uses: goreleaser/goreleaser-action@v2
         with:
           distribution: goreleaser
