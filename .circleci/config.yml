@@ -1,18 +1,5 @@
 version: 2
 jobs:
-  test:
-    working_directory: /go/src/github.com/kitsuyui/scraper
-    docker:
-      - image: golang:1.18.1-stretch@sha256:d2bf19df94b36ee7fe4e99d221bf1b0b3b7a077ddfe73c6aae9335f9d9544dbe
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          command: |
-            ./bin/test.sh
-            ./bin/coverage.sh
-            bash <(curl -s https://codecov.io/bash)
-
   release:
     working_directory: /go/src/github.com/kitsuyui/scraper
     docker:
@@ -35,13 +22,7 @@ workflows:
   version: 2
   build_and_release:
     jobs:
-      - test:
-          filters:
-            tags:
-              only: /.*/
       - release:
-          requires:
-            - test
           filters:
             branches:
               ignore: /.*/
