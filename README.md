@@ -1,6 +1,5 @@
 # Scraper: Swiss Army Knife for Web scraping
 
-[![CircleCI Status](https://circleci.com/gh/kitsuyui/scraper.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/kitsuyui/scraper)
 [![Codecov Status](https://img.shields.io/codecov/c/github/kitsuyui/scraper.svg)](https://codecov.io/github/kitsuyui/scraper/)
 [![Github All Releases](https://img.shields.io/github/downloads/kitsuyui/scraper/total.svg)](https://github.com/kitsuyui/scraper/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kitsuyui/scraper.svg)](https://hub.docker.com/r/kitsuyui/scraper/)
@@ -178,7 +177,6 @@ Docker image for server mode: [kitsuyui/scraper](https://hub.docker.com/r/kitsuy
 $ docker run -p 8080:8080 -it kitsuyui/scraper
 ```
 
-
 ### Options
 
 ```
@@ -229,7 +227,7 @@ The 3-Clause BSD License. See also LICENSE file.
 ### statically linked libraries:
 
 - [golang/go](https://github.com/golang/go/) ... [BSD 3-clause "New" or "Revised" License](https://github.com/golang/go/blob/master/LICENSE)
--	[antchfx/xpath](https://github.com/antchfx/xpath/) ... [MIT License](https://github.com/antchfx/xpath/blob/master/LICENSE)
--	[antchfx/xquery](https://github.com/antchfx/xquery/) ... [MIT License](https://github.com/antchfx/xquery/blob/master/LICENSE)
--	[andybalholm/cascadia](https://github.com/andybalholm/cascadia/) ... [BSD 2-clause "Simplified" License](https://github.com/andybalholm/cascadia/blob/master/LICENSE)
+- [antchfx/xpath](https://github.com/antchfx/xpath/) ... [MIT License](https://github.com/antchfx/xpath/blob/master/LICENSE)
+- [antchfx/xquery](https://github.com/antchfx/xquery/) ... [MIT License](https://github.com/antchfx/xquery/blob/master/LICENSE)
+- [andybalholm/cascadia](https://github.com/andybalholm/cascadia/) ... [BSD 2-clause "Simplified" License](https://github.com/andybalholm/cascadia/blob/master/LICENSE)
 - [docopt/docopt-go](https://github.com/docopt/docopt.go) ... [MIT License](https://github.com/docopt/docopt.go/blob/master/LICENSE)
