@@ -18,6 +18,9 @@ jobs:
       - name: install dependencies
         run: go get -v -t -d ./...
 
+      - name: lint
+        run: go vet ./...
+
       - name: test
         run: go test -v -cover -race -covermode=atomic -coverprofile=coverage.out ./...
 
