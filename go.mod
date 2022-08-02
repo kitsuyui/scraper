@@ -1,6 +1,6 @@
 module github.com/kitsuyui/scraper
 
-go 1.18
+go 1.19
 
 require (
 	github.com/andybalholm/cascadia v1.3.1
