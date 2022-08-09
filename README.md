@@ -6,6 +6,8 @@
 
 # Installation
 
+## Download binary
+
 You can download executable static binary from https://github.com/kitsuyui/scraper/releases/latest .
 
 - typically Linux ... download scraper_linux_amd64.
@@ -18,6 +20,12 @@ and then just you have to do is adding PATH and permitting it to executable.
 $ target=scraper_darwin_amd64  # executable binary you downloaded.
 $ cp "./$target" /usr/bin/scraper
 $ chmod +x /usr/bin/scraper
+```
+
+## Install as go module
+
+```console
+$ go install github.com/kitsuyui/scraper@latest
 ```
 
 # Usage
