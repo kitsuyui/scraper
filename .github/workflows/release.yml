@@ -1,13 +1,9 @@
-# https://github.com/goreleaser/goreleaser-action
 name: release
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-  create:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+  release:
+    # "released" events are emitted either when directly be released or be edited from pre-released.
+    types: [prereleased, released]
 
 jobs:
   goreleaser:
@@ -20,7 +16,8 @@ jobs:
         uses: actions/setup-go@v3
 
       - name: release
-        if: startsWith(github.event.ref, 'refs/tags')
+        if: github.event_name == 'release' && !github.event.release.prerelease
+        # https://github.com/goreleaser/goreleaser-action
         uses: goreleaser/goreleaser-action@v3
         with:
           distribution: goreleaser
