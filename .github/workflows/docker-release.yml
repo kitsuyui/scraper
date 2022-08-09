@@ -33,7 +33,7 @@ jobs:
         if: github.event_name == 'release' && !github.event.release.prerelease
         with:
           context: .
-          file: docker/Dockerfile
+          file: docker/server/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
