@@ -8,7 +8,7 @@ require (
 	github.com/antchfx/xpath v1.2.1
 	github.com/antchfx/xquery v0.0.0-20180515051857-ad5b8c7a47b0
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
-	golang.org/x/net v0.0.0-20220919232410-f2f64ebce3c1
+	golang.org/x/net v0.0.0-20220920203100-d0c6ba3f52d9
 )
 
 require (
