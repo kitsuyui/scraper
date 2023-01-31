@@ -29,7 +29,7 @@ jobs:
           images: kitsuyui/scraper
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         if: github.event_name == 'release' && !github.event.release.prerelease
         with:
           context: .
