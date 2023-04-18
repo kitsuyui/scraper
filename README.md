@@ -207,7 +207,7 @@ Options:
 
 ## Build
 
-### For developping
+### For developing
 
 ```
 $ go get -d ./src/...
