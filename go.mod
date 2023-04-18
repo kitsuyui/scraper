@@ -3,7 +3,7 @@ module github.com/kitsuyui/scraper
 go 1.19
 
 require (
-	github.com/andybalholm/cascadia v1.3.1
+	github.com/andybalholm/cascadia v1.3.2
 	github.com/antchfx/htmlquery v1.3.0
 	github.com/antchfx/xpath v1.2.4
 	github.com/antchfx/xquery v0.0.0-20180515051857-ad5b8c7a47b0
