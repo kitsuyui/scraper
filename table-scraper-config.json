@@ -1,0 +1,3 @@
+[
+  {"type": "table-xpath", "label": "Tables", "query": "//table"}
+]
