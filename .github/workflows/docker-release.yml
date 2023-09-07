@@ -1,8 +1,8 @@
 name: Release
 
 on:
-  push:
   pull_request:
+    types: [opened, synchronize, reopened]
   release:
     # "released" events are emitted either when directly be released or be edited from pre-released.
     types: [prereleased, released]
