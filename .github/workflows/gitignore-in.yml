@@ -1,0 +1,16 @@
+name: Update gitignore file
+
+on:
+  schedule:
+    # daily at 00:00
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-gitignore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: gitignore-in/gh-action@v0.1.0
