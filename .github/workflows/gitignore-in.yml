@@ -13,4 +13,4 @@ jobs:
   update-gitignore:
     runs-on: ubuntu-latest
     steps:
-      - uses: gitignore-in/gh-action@v0.1.0
+      - uses: gitignore-in/gh-action@v0.2.0
