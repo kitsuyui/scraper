@@ -1,7 +1,13 @@
 name: golang-test
 
 on:
-  - pull_request
+  # pull-request events are not triggered when a PR is merged
+  # push events are not triggered when a PR created from a fork repository
+  # So we need both to run tests on every PR and after merging
+  pull_request:
+  push:
+    branches:
+      - main
 jobs:
   test:
     name: test
