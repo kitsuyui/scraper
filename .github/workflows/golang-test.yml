@@ -35,7 +35,7 @@ jobs:
       - name: test
         run: go test -v -cover -race -covermode=atomic -coverprofile=coverage.out ./...
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.out
