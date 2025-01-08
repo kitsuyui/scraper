@@ -34,7 +34,7 @@ func TestCSSInvalid(t *testing.T) {
 		Label: "title",
 	}).compile()
 	if err == nil {
-		t.Errorf("Must be error when invalid css selecter is passed.")
+		t.Errorf("Must be error when invalid css selector is passed.")
 	}
 }
 
@@ -78,7 +78,7 @@ func TestTableCSSInvalid(t *testing.T) {
 		Label: "title",
 	}).compile()
 	if err == nil {
-		t.Errorf("Must be error when invalid css selecter is passed.")
+		t.Errorf("Must be error when invalid css selector is passed.")
 	}
 }
 
