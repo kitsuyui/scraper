@@ -79,7 +79,7 @@ func (rs recipes) compile() (compiledRecipes, error) {
 	if len(errMsgs) == 0 {
 		return crs, nil
 	}
-	return crs, fmt.Errorf(strings.Join(errMsgs, "\n"))
+	return crs, fmt.Errorf("%s", strings.Join(errMsgs, "\n"))
 }
 
 func (r recipe) compile() (*compiledRecipe, error) {
