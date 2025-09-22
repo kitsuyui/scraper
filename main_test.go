@@ -80,30 +80,31 @@ func TestBasicInvalidConfigFile(t *testing.T) {
 func TestMainCommand(t *testing.T) {
 	opts, err := docopt.ParseArgs(usage, []string{}, "")
 	if err != nil {
-		t.Errorf(err.Error())
+		// t.Errorf(err.Error())
+		t.Errorf("%s", err)
 	}
 	configFilePath, err := opts.String("--config")
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err)
 	}
 	if configFilePath != "scraper-config.json" {
-		t.Errorf(configFilePath)
+		t.Errorf("%s", configFilePath)
 	}
 
 	inputFilePath, err := opts.String("--input")
 	if err == nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err)
 	}
 	if inputFilePath != "" {
-		t.Errorf(inputFilePath)
+		t.Errorf("%s", inputFilePath)
 	}
 
 	outputFilePath, err := opts.String("--output")
 	if err == nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err)
 	}
 	if outputFilePath != "" {
-		t.Errorf(outputFilePath)
+		t.Errorf("%s", outputFilePath)
 	}
 }
 
@@ -129,7 +130,7 @@ func TestServerSubCommand(t *testing.T) {
 
 	host, err := opts.String("--host")
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err)
 	}
 	if host != "127.0.0.1" {
 		t.Errorf("%s != 127.0.0.1", host)
@@ -137,7 +138,7 @@ func TestServerSubCommand(t *testing.T) {
 
 	port, err := opts.Int("--port")
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err)
 	}
 	if port != 8080 {
 		t.Errorf("%d != 8080", port)
@@ -145,7 +146,7 @@ func TestServerSubCommand(t *testing.T) {
 
 	confDir, err := opts.String("--conf-dir")
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err)
 	}
 	if confDir != "." {
 		t.Errorf("%s != .", host)
