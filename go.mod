@@ -2,7 +2,7 @@ module github.com/kitsuyui/scraper
 
 go 1.24.0
 
-toolchain go1.25.5
+toolchain go1.25.6
 
 require (
 	github.com/andybalholm/cascadia v1.3.3
