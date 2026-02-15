@@ -1,6 +1,6 @@
 # Scraper: Swiss Army Knife for Web scraping
 
-[![Codecov Status](https://img.shields.io/codecov/c/github/kitsuyui/scraper.svg)](https://codecov.io/github/kitsuyui/scraper/)
+![Coverage](https://raw.githubusercontent.com/kitsuyui/octocov-central/main/badges/kitsuyui/scraper/coverage.svg)
 [![Github All Releases](https://img.shields.io/github/downloads/kitsuyui/scraper/total.svg)](https://github.com/kitsuyui/scraper/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kitsuyui/scraper.svg)](https://hub.docker.com/r/kitsuyui/scraper/)
 
