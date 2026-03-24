@@ -14,6 +14,7 @@ diff:
     - artifact://${GITHUB_REPOSITORY}
 comment:
   if: is_pull_request
+  updatePrevious: true
 report:
   if: is_default_branch
   datastores:
