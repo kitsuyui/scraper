@@ -8,9 +8,30 @@ on:
     types: [prereleased, released]
 
 jobs:
-  push_to_registry:
+  docker_build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build multi-arch Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/server/Dockerfile
+          push: false
+          tags: kitsuyui/scraper:ci
+          load: false
+          platforms: linux/amd64,linux/arm64
+
+  docker_publish:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
+    if: github.event_name == 'release' && !github.event.release.prerelease
     steps:
       - uses: actions/checkout@v6
 
@@ -31,7 +52,6 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
-        if: github.event_name == 'release' && !github.event.release.prerelease
         with:
           context: .
           file: docker/server/Dockerfile
