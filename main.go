@@ -11,6 +11,7 @@ import (
 )
 
 var exit = os.Exit
+var createServer = server.CreateServer
 var usage = `scraper: Swiss army knife for web scraping
 
 Usage:
@@ -42,8 +43,8 @@ func main() {
 	} else if serverMode, _ := opts.Bool("server"); serverMode {
 		host, _ := opts.String("--host")
 		port, _ := opts.Int("--port")
-		confDir, _ := opts.String("--config-dir")
-		s, err := server.CreateServer(host, port, confDir)
+		confDir, _ := opts.String("--conf-dir")
+		s, err := createServer(host, port, confDir)
 		if err != nil {
 			fmt.Println(err.Error())
 			exit(1)
@@ -67,12 +68,14 @@ func main() {
 		}
 
 		if outputFilepath, err := opts.String("--output"); err == nil {
-			output, err = os.Open(outputFilepath)
+			outputFile, err := os.Create(outputFilepath)
 			if err != nil {
 				fmt.Println(err.Error())
 				exit(1)
 				return
 			}
+			defer outputFile.Close()
+			output = outputFile
 		}
 
 		configFilepath, _ := opts.String("--config")
