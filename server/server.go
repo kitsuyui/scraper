@@ -15,6 +15,8 @@ type ServerContext struct {
 	ConfigDirectory string
 }
 
+const allowedMethods = "GET, POST, PUT, DELETE"
+
 func (s *ServerContext) setConfigDirectory(configDir string) error {
 	absPath, err := filepath.Abs(configDir)
 	if err != nil {
@@ -41,6 +43,9 @@ func (s *ServerContext) handler(w http.ResponseWriter, r *http.Request) {
 		s.handlerPUT(w, r)
 	case "DELETE":
 		s.handlerDELETE(w, r)
+	default:
+		w.Header().Set("Allow", allowedMethods)
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 	}
 }
 
