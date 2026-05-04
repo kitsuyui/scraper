@@ -116,6 +116,27 @@ func TestDeleteNotExists(t *testing.T) {
 	}
 }
 
+func TestUnsupportedMethod(t *testing.T) {
+	configPath := "/something-config.json"
+	server := httptest.NewServer(http.HandlerFunc(serverContext.handler))
+	defer server.Close()
+	req, err := http.NewRequest(http.MethodPatch, server.URL+configPath, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusMethodNotAllowed {
+		t.Errorf("this must be 405")
+	}
+	if allow := res.Header.Get("Allow"); allow != "GET, POST, PUT, DELETE" {
+		t.Errorf("Allow header must list supported methods")
+	}
+}
+
 func postRequest(server *httptest.Server, postHTML string, postPath string) (int, string, error) {
 	b := bytes.NewBufferString(postHTML)
 	res, err := http.Post(server.URL+postPath, "application/octet-stream", b)
