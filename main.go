@@ -60,11 +60,13 @@ func main() {
 		input = os.Stdin
 		output = os.Stdout
 		if inputFilepath, err := opts.String("--input"); err == nil {
-			input, err = os.Open(inputFilepath)
+			inputFile, err := os.Open(inputFilepath)
 			if err != nil {
 				fmt.Println(err.Error())
 				exit(1)
 			}
+			defer inputFile.Close()
+			input = inputFile
 		}
 
 		if outputFilepath, err := opts.String("--output"); err == nil {
