@@ -8,6 +8,10 @@ on:
   push:
     branches:
       - main
+
+permissions:
+  contents: read
+
 jobs:
   test:
     name: test
@@ -34,4 +38,3 @@ jobs:
 
       - name: test
         run: go test -v -cover -race -covermode=atomic -coverprofile=coverage.out ./...
-

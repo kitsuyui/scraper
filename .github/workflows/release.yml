@@ -7,8 +7,12 @@ on:
     # "released" events are emitted either when directly be released or be edited from pre-released.
     types: [prereleased, released]
 
+permissions:
+  contents: read
+
 jobs:
-  goreleaser:
+  goreleaser_check:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -23,8 +27,25 @@ jobs:
 
       - run: go install
 
+  goreleaser:
+    if: github.event_name == 'release' && !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+
+      - name: setup
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+          check-latest: true
+          cache: true
+
+      - run: go install
+
       - name: release
-        if: github.event_name == 'release' && !github.event.release.prerelease
         # https://github.com/goreleaser/goreleaser-action
         uses: goreleaser/goreleaser-action@v6
         with:
