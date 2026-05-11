@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: setup
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: "1.26"
           check-latest: true
@@ -37,7 +37,7 @@ jobs:
 
       # See also: https://github.com/k1LoW/octocov-action
       - name: Report coverage with octocov
-        uses: k1LoW/octocov-action@v1
+        uses: k1LoW/octocov-action@b3b6ee60482a667950f87553abf1df63217235d9 # v1.5.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config: .octocov.yml
