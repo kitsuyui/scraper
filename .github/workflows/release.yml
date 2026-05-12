@@ -7,6 +7,10 @@ on:
     # "released" events are emitted either when directly be released or be edited from pre-released.
     types: [prereleased, released]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
