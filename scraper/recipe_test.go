@@ -221,6 +221,66 @@ func TestBasicsTables(t *testing.T) {
 	}
 }
 
+func TestTableHeaderCells(t *testing.T) {
+	r := &recipes{{
+		Type:  "table-xpath",
+		Query: "//table",
+		Label: "table1",
+	}, {
+		Type:  "table-css",
+		Query: "table",
+		Label: "table1",
+	}}
+	cr, err := r.compile()
+	if err != nil {
+		t.Errorf("Must not be error on this recipe.")
+	}
+	input := bytes.NewBufferString(`
+<html>
+	<body>
+		<table border=1>
+		  <tr><th>Name</th><th>Score</th></tr>
+		  <tr><th>Alice</th><td>10</td></tr>
+		</table>
+	</body>
+</html>
+`)
+	results, err := cr.extractAll(input)
+	if err != nil {
+		t.Errorf("This is valid HTML File")
+	}
+	if len(results) != len(*r) {
+		t.Errorf("Not match size results and recipes")
+	}
+	expects := [][]string{
+		{"Name", "Score"},
+		{"Alice", "10"},
+	}
+	for k, testCase := range results {
+		if len(*testCase.results.TableResult) != 1 {
+			t.Errorf("Not match size table results in %s", (*r)[k].Type)
+			continue
+		}
+		for _, rows := range *testCase.results.TableResult {
+			if len(rows) != len(expects) {
+				t.Errorf("Not match size table rows in %s", (*r)[k].Type)
+				continue
+			}
+			for i, expectRow := range expects {
+				if len(rows[i]) != len(expectRow) {
+					t.Errorf("Not match size table columns in %s", (*r)[k].Type)
+					continue
+				}
+				for j, cell := range expectRow {
+					if rows[i][j] != cell {
+						t.Errorf("Not match table cell, expect %s != result %s in %s", cell, rows[i][j], (*r)[k].Type)
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestInvalidRowspanColspan(t *testing.T) {
 	r := &recipes{
 		{
