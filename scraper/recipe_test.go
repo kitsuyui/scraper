@@ -60,6 +60,59 @@ func TestXPathInvalid(t *testing.T) {
 	}
 }
 
+func TestXPathScalarResults(t *testing.T) {
+	r := &recipes{
+		{
+			Type:  "xpath",
+			Query: "count(//p)",
+			Label: "paragraph-count",
+		}, {
+			Type:  "xpath",
+			Query: "string(//h1)",
+			Label: "heading",
+		}, {
+			Type:  "xpath",
+			Query: "boolean(//p)",
+			Label: "has-paragraph",
+		},
+	}
+	cr, err := r.compile()
+	if err != nil {
+		t.Fatalf("Must not be error on this recipe.")
+	}
+	input := bytes.NewBufferString(`
+<html>
+  <body>
+    <h1>Heading</h1>
+    <p>first</p>
+    <p>second</p>
+  </body>
+</html>
+`)
+	results, err := cr.extractAll(input)
+	if err != nil {
+		t.Fatalf("This is valid HTML File")
+	}
+	if len(results) != len(*r) {
+		t.Fatalf("Not match size results and recipes")
+	}
+	expects := []string{"2", "Heading", "true"}
+	for i, expect := range expects {
+		if results[i].results.PlainResult == nil {
+			t.Errorf("PlainResult is nil for %s", (*r)[i].Type)
+			continue
+		}
+		actual := *results[i].results.PlainResult
+		if len(actual) != 1 {
+			t.Errorf("Not match result count, expect 1 != result %d", len(actual))
+			continue
+		}
+		if actual[0] != expect {
+			t.Errorf("Not match scalar XPath result, expect %s != result %s", expect, actual[0])
+		}
+	}
+}
+
 func TestTableXPathInvalid(t *testing.T) {
 	_, err := (&recipe{
 		Type:  "table-xpath",
