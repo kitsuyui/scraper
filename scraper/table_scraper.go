@@ -55,7 +55,7 @@ func extractTable(n *html.Node) [][]string {
 	colmax := 0
 	rowmax := 0
 	c := map[int]map[int]*string{}
-	for i, tr := range htmlquery.Find(n, ".//tr") {
+	for i, tr := range htmlquery.Find(n, "./tr | ./tbody/tr | ./thead/tr | ./tfoot/tr") {
 		jFixed := 0
 		for _, td := range htmlquery.Find(tr, ".//th or .//td") {
 			colspan, rowspan := parseColspanRowspan(td)
