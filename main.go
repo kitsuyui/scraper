@@ -102,11 +102,13 @@ func main() {
 		}
 
 		configFilepath, _ := opts.String("--config")
-		confFile, err := os.Open(configFilepath)
+		cf, err := os.Open(configFilepath)
 		if err != nil {
 			reportError(err, exitConfigFile)
 			return
 		}
+		defer cf.Close()
+		confFile = cf
 
 		err = scraper.ScrapeByConfFile(confFile, input, output)
 		if err != nil {
