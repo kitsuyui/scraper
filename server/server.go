@@ -4,13 +4,34 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/kitsuyui/scraper/scraper"
 )
+
+type responseRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rr *responseRecorder) WriteHeader(code int) {
+	rr.status = code
+	rr.ResponseWriter.WriteHeader(code)
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		rec := &responseRecorder{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(rec, r)
+		log.Printf("%s %s %d %s", r.Method, r.URL.Path, rec.status, time.Since(start))
+	})
+}
 
 const maxBodyBytes = 10 * 1024 * 1024 // 10 MB
 
@@ -148,7 +169,7 @@ func CreateServer(bindHost string, bindPort int, configDir string) (*http.Server
 		return nil, err
 	}
 	bindAddr := fmt.Sprintf("%s:%d", bindHost, bindPort)
-	handler := http.MaxBytesHandler(http.HandlerFunc(sc.handler), maxBodyBytes)
+	handler := loggingMiddleware(http.MaxBytesHandler(http.HandlerFunc(sc.handler), maxBodyBytes))
 	server := &http.Server{Addr: bindAddr, Handler: handler}
 	return server, nil
 }

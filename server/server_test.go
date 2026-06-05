@@ -3,7 +3,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -12,11 +12,40 @@ import (
 	"testing"
 )
 
+func TestLoggingMiddleware(t *testing.T) {
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer log.SetOutput(os.Stderr)
+
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	})
+	server := httptest.NewServer(loggingMiddleware(inner))
+	defer server.Close()
+
+	res, err := http.Get(server.URL + "/test-path")
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	got := buf.String()
+	if !strings.Contains(got, "GET") {
+		t.Errorf("log line missing method: %q", got)
+	}
+	if !strings.Contains(got, "/test-path") {
+		t.Errorf("log line missing path: %q", got)
+	}
+	if !strings.Contains(got, "404") {
+		t.Errorf("log line missing status: %q", got)
+	}
+}
+
 var testConfigDir string
 var serverContext ServerContext
 
 func TestMain(m *testing.M) {
-	dir, err := ioutil.TempDir("", "tmp")
+	dir, err := os.MkdirTemp("", "tmp")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -181,7 +210,7 @@ func postRequest(server *httptest.Server, postHTML string, postPath string) (int
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -201,7 +230,7 @@ func putRequest(server *httptest.Server, postJSON string, postPath string) (int,
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	return res.StatusCode, string(body), err
 }
 
@@ -211,7 +240,7 @@ func getRequest(server *httptest.Server, getPath string) (int, string, error) {
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -229,6 +258,6 @@ func deleteRequest(server *httptest.Server, deletePath string) (int, string, err
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	return res.StatusCode, string(body), err
 }
