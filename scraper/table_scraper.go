@@ -57,7 +57,7 @@ func extractTable(n *html.Node) [][]string {
 	c := map[int]map[int]*string{}
 	for i, tr := range htmlquery.Find(n, ".//tr") {
 		jFixed := 0
-		for _, td := range htmlquery.Find(tr, ".//th or .//td") {
+		for _, td := range htmlquery.Find(tr, ".//th | .//td") {
 			colspan, rowspan := parseColspanRowspan(td)
 			strVal := extractTextFromNodeRecursively(td)
 			for isFilled(c, i, jFixed) {
