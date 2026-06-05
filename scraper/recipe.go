@@ -23,6 +23,9 @@ type scrapeResult struct {
 }
 
 func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
+	if sr.results == nil {
+		return nil, fmt.Errorf("scrapeResult.MarshalJSON: extractResult is nil")
+	}
 	if sr.results.TableResult != nil {
 		return json.Marshal(&struct {
 			recipe
@@ -31,6 +34,9 @@ func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
 			recipe:  sr.recipe,
 			Results: *sr.results.TableResult,
 		})
+	}
+	if sr.results.PlainResult == nil {
+		return nil, fmt.Errorf("scrapeResult.MarshalJSON: both TableResult and PlainResult are nil")
 	}
 	return json.Marshal(&struct {
 		recipe
@@ -129,7 +135,7 @@ func (r recipe) compile() (*compiledRecipe, error) {
 			textScraper: textScraper,
 		}, nil
 	}
-	return nil, fmt.Errorf("Unimplemented type: %s", r.Type)
+	return nil, fmt.Errorf("unimplemented type: %s", r.Type)
 }
 
 func (crs compiledRecipes) extractAll(input io.Reader) ([]scrapeResult, error) {
@@ -142,7 +148,7 @@ func (crs compiledRecipes) extractAll(input io.Reader) ([]scrapeResult, error) {
 	input = strings.NewReader(htmlText)
 	doc, err := htmlquery.Parse(input)
 	if err != nil {
-		return nil, fmt.Errorf("If this error is occurred, please tell me HTML for adding unit-test case.%s", err)
+		return nil, fmt.Errorf("if this error is occurred, please tell me HTML for adding unit-test case.%s", err)
 	}
 	var ers []scrapeResult
 	for _, cr := range crs {

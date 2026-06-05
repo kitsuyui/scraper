@@ -279,3 +279,25 @@ func TestRegexInvalid(t *testing.T) {
 		t.Errorf("Must be error when invalid regular expression is passed.")
 	}
 }
+
+func TestMarshalJSONNilResults(t *testing.T) {
+	sr := &scrapeResult{
+		recipe:  recipe{Type: "css", Query: "title", Label: "title"},
+		results: nil,
+	}
+	_, err := sr.MarshalJSON()
+	if err == nil {
+		t.Errorf("MarshalJSON must return error when results is nil")
+	}
+}
+
+func TestMarshalJSONBothResultsNil(t *testing.T) {
+	sr := &scrapeResult{
+		recipe:  recipe{Type: "css", Query: "title", Label: "title"},
+		results: &extractResult{PlainResult: nil, TableResult: nil},
+	}
+	_, err := sr.MarshalJSON()
+	if err == nil {
+		t.Errorf("MarshalJSON must return error when both PlainResult and TableResult are nil")
+	}
+}
