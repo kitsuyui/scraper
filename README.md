@@ -205,6 +205,18 @@ Options:
  -d=<conf-dir> --conf-dir=<conf-dir>  Configuration directory for server mode [default: .].
 ```
 
+### Exit status
+
+CLI diagnostics are written to stderr. Successful commands exit with status `0`.
+Error statuses are:
+
+- `2`: configuration validation failed.
+- `3`: server mode startup failed.
+- `4`: input file could not be opened.
+- `5`: output file could not be created.
+- `6`: configuration file could not be opened.
+- `7`: scraping failed.
+
 ## Build
 
 ### For developing
