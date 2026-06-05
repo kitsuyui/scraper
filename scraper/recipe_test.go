@@ -454,6 +454,53 @@ func TestMarshalJSONBothResultsNil(t *testing.T) {
 	}
 }
 
+func TestInvalidColspanRowspanFallsBackToOne(t *testing.T) {
+	r := &recipes{{
+		Type:  "table-xpath",
+		Query: "//table",
+		Label: "table1",
+	}}
+	cr, err := r.compile()
+	if err != nil {
+		t.Errorf("Must not be error on this recipe.")
+	}
+	input := bytes.NewBufferString(`<html><body>
+		<table>
+			<tr><td colspan="0">a</td><td>b</td></tr>
+			<tr><td rowspan="-3">c</td><td>d</td></tr>
+		</table>
+	</body></html>`)
+	results, err := cr.extractAll(input)
+	if err != nil {
+		t.Errorf("Must not error on invalid colspan/rowspan lower bounds")
+	}
+	if len(results) != 1 {
+		t.Fatalf("Expected 1 result, got %d", len(results))
+	}
+	tables := *results[0].results.TableResult
+	if len(tables) != 1 {
+		t.Fatalf("Expected 1 table result, got %d", len(tables))
+	}
+	rows := tables[0]
+	expected := [][]string{
+		{"a", "b"},
+		{"c", "d"},
+	}
+	if len(rows) != len(expected) {
+		t.Fatalf("Expected %d rows, got %d: %#v", len(expected), len(rows), rows)
+	}
+	for i := range expected {
+		if len(rows[i]) != len(expected[i]) {
+			t.Fatalf("Expected %d columns in row %d, got %d: %#v", len(expected[i]), i, len(rows[i]), rows[i])
+		}
+		for j := range expected[i] {
+			if rows[i][j] != expected[i][j] {
+				t.Errorf("Expected cell[%d][%d] to be %q, got %q", i, j, expected[i][j], rows[i][j])
+			}
+		}
+	}
+}
+
 func TestLargeColspanRowspanIsCapped(t *testing.T) {
 	r := &recipes{{
 		Type:  "table-xpath",
