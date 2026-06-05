@@ -392,3 +392,38 @@ func TestRegexInvalid(t *testing.T) {
 		t.Errorf("Must be error when invalid regular expression is passed.")
 	}
 }
+
+func TestLargeColspanRowspanIsCapped(t *testing.T) {
+	r := &recipes{{
+		Type:  "table-xpath",
+		Query: "//table",
+		Label: "table1",
+	}}
+	cr, err := r.compile()
+	if err != nil {
+		t.Errorf("Must not be error on this recipe.")
+	}
+	// colspan=10000 and rowspan=10000 would create 10^8 map entries without the cap;
+	// with maxSpan=100 it creates at most 100*100=10000 entries.
+	input := bytes.NewBufferString(`<html><body>
+		<table><tr><td colspan="10000" rowspan="10000">x</td></tr></table>
+	</body></html>`)
+	results, err := cr.extractAll(input)
+	if err != nil {
+		t.Errorf("Must not error on large colspan/rowspan")
+	}
+	if len(results) != 1 {
+		t.Fatalf("Expected 1 result, got %d", len(results))
+	}
+	rows := *results[0].results.TableResult
+	if len(rows) == 0 {
+		t.Errorf("Expected non-empty table result")
+	}
+	// The cell value should be present and capped to maxSpan rows/cols
+	if len(rows) > maxSpan {
+		t.Errorf("rowspan should be capped: got %d rows, expected <= %d", len(rows), maxSpan)
+	}
+	if len(rows[0]) > maxSpan {
+		t.Errorf("colspan should be capped: got %d cols, expected <= %d", len(rows[0]), maxSpan)
+	}
+}
