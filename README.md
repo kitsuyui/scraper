@@ -118,6 +118,27 @@ $ scraper < index.html
 ]
 ```
 
+### Behavior notes for `regex` type
+
+**First match only.** Unlike `css` and `xpath` types which return all matching nodes,
+the `regex` type returns only the **first match** found in the input text.
+
+**Capture groups.** When the pattern contains capture groups (parentheses), the `results`
+array includes the full match at index 0 followed by each capture group:
+
+```
+query: "Cat, (.*?), Snake"
+input: "Cat, Dog, Snake and Cat, Rabbit, Snake"
+
+results: ["Cat, Dog, Snake", "Dog"]
+         ^^^^^^^^^^^^^^^^^  ^^^
+         full match (idx 0)  capture group 1 (idx 1)
+```
+
+Note that only the first occurrence (`Cat, Dog, Snake`) is returned even though
+the input contains a second match (`Cat, Rabbit, Snake`).
+Use `css` or `xpath` if you need all occurrences.
+
 ## Composable
 
 Obviously these recipes are mixable.
@@ -204,6 +225,18 @@ Options:
  -p=<port> --port=<port>              Server mode port [default: 8080].
  -d=<conf-dir> --conf-dir=<conf-dir>  Configuration directory for server mode [default: .].
 ```
+
+### Exit status
+
+CLI diagnostics are written to stderr. Successful commands exit with status `0`.
+Error statuses are:
+
+- `2`: configuration validation failed.
+- `3`: server mode startup failed.
+- `4`: input file could not be opened.
+- `5`: output file could not be created.
+- `6`: configuration file could not be opened.
+- `7`: scraping failed.
 
 ## Build
 

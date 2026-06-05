@@ -3,9 +3,18 @@ package scraper
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"os"
 	"testing"
 )
+
+type errWriter struct {
+	err error
+}
+
+func (w errWriter) Write([]byte) (int, error) {
+	return 0, w.err
+}
 
 func TestScrapeByConfFileInvalid(t *testing.T) {
 	testFilepath := "../test_assets/invalid-config.json"
@@ -58,6 +67,24 @@ func TestScrapeByConfFile(t *testing.T) {
 	err = ScrapeByConfFile(invalidConf, input, output)
 	if err != nil {
 		t.Errorf("Must not be error on valid config file: %s", testFilepath)
+	}
+}
+
+func TestScrapeByConfFileReturnsEncodeError(t *testing.T) {
+	testFilepath := "../test_assets/config.json"
+	testHTMLFilepath := "../test_assets/ok.html"
+	conf, err := os.Open(testFilepath)
+	if err != nil {
+		t.Fatalf("Must be opened %s", testFilepath)
+	}
+	input, err := os.Open(testHTMLFilepath)
+	if err != nil {
+		t.Fatalf("Must be opened %s", testHTMLFilepath)
+	}
+	writeErr := errors.New("write failed")
+	err = ScrapeByConfFile(conf, input, errWriter{err: writeErr})
+	if !errors.Is(err, writeErr) {
+		t.Errorf("Must return output write error: %v", err)
 	}
 }
 

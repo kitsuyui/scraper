@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/kitsuyui/scraper/scraper"
 )
+
+const maxBodyBytes = 10 * 1024 * 1024 // 10 MB
 
 type ServerContext struct {
 	ConfigDirectory string
@@ -56,7 +59,10 @@ func (s *ServerContext) confFilePathFromRequest(r *http.Request) string {
 }
 
 func errorStatus(w http.ResponseWriter, err error) {
-	if os.IsNotExist(err) {
+	var maxBytesErr *http.MaxBytesError
+	if errors.As(err, &maxBytesErr) {
+		http.Error(w, http.StatusText(http.StatusRequestEntityTooLarge), http.StatusRequestEntityTooLarge)
+	} else if os.IsNotExist(err) {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`{"Error": "The file does not exists"}`))
 	} else if os.IsPermission(err) {
@@ -91,19 +97,36 @@ func (s *ServerContext) handlerPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer confFile.Close()
-	scraper.ScrapeByConfFile(confFile, r.Body, w)
+	if err := scraper.ScrapeByConfFile(confFile, r.Body, w); err != nil {
+		errorStatus(w, err)
+	}
 }
 
 func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	confFile, err := os.Create(s.confFilePathFromRequest(r))
+	targetPath := s.confFilePathFromRequest(r)
+
+	tmpFile, err := os.CreateTemp(filepath.Dir(targetPath), ".put-tmp-*")
 	if err != nil {
 		errorStatus(w, err)
 		return
 	}
-	defer confFile.Close()
-	_, err = io.Copy(confFile, r.Body)
-	if err != nil {
+	tmpPath := tmpFile.Name()
+
+	_, copyErr := io.Copy(tmpFile, r.Body)
+	closeErr := tmpFile.Close()
+	if copyErr != nil || closeErr != nil {
+		os.Remove(tmpPath)
+		if copyErr != nil {
+			errorStatus(w, copyErr)
+		} else {
+			errorStatus(w, closeErr)
+		}
+		return
+	}
+
+	if err := os.Rename(tmpPath, targetPath); err != nil {
+		os.Remove(tmpPath)
 		errorStatus(w, err)
 		return
 	}
@@ -125,6 +148,7 @@ func CreateServer(bindHost string, bindPort int, configDir string) (*http.Server
 		return nil, err
 	}
 	bindAddr := fmt.Sprintf("%s:%d", bindHost, bindPort)
-	server := &http.Server{Addr: bindAddr, Handler: http.HandlerFunc(sc.handler)}
+	handler := http.MaxBytesHandler(http.HandlerFunc(sc.handler), maxBodyBytes)
+	server := &http.Server{Addr: bindAddr, Handler: handler}
 	return server, nil
 }

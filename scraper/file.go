@@ -27,8 +27,7 @@ func scrapeByCompiledRecipes(cr compiledRecipes, input io.Reader, output io.Writ
 	}
 	e := json.NewEncoder(output)
 	e.SetIndent(" ", "  ")
-	e.Encode(ers)
-	return nil
+	return e.Encode(ers)
 }
 
 func compileConfigFile(f io.Reader) (compiledRecipes, error) {
