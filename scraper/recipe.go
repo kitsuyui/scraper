@@ -41,12 +41,16 @@ func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
 			Results: *sr.results.TableResult,
 		})
 	}
+	plainResult := *sr.results.PlainResult
+	if plainResult == nil {
+		plainResult = []string{}
+	}
 	return json.Marshal(&struct {
 		recipe
 		Results []string `json:"results"`
 	}{
 		recipe:  sr.recipe,
-		Results: *sr.results.PlainResult,
+		Results: plainResult,
 	})
 }
 
