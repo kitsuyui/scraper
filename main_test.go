@@ -22,17 +22,15 @@ func TestServerFailBindInvalidPort(t *testing.T) {
 }
 
 func TestValidateConfig(t *testing.T) {
-	os.Args = []string{"scraper", "validate", "-c", "../test_assets/scraper-config.json"}
+	os.Args = []string{"scraper", "validate", "-c", "test_assets/scraper-config.json"}
 	exit = func(i int) {
-		if i == 0 {
-			t.Error("exit status must not be 0")
-		}
+		t.Errorf("unexpected exit with status %d", i)
 	}
 	main()
 }
 
 func TestValidateConfigInvalid(t *testing.T) {
-	os.Args = []string{"scraper", "validate", "-c", "../test_assets/invalid-config.json"}
+	os.Args = []string{"scraper", "validate", "-c", "test_assets/invalid-config.json"}
 	exit = func(i int) {
 		if i == 0 {
 			t.Error("exit status must not be 0")
@@ -42,7 +40,7 @@ func TestValidateConfigInvalid(t *testing.T) {
 }
 
 func TestValidateConfigNotExists(t *testing.T) {
-	os.Args = []string{"scraper", "validate", "-c", "../test_assets/not-exists.json"}
+	os.Args = []string{"scraper", "validate", "-c", "test_assets/not-exists.json"}
 	exit = func(i int) {
 		if i == 0 {
 			t.Error("exit status must not be 0")
