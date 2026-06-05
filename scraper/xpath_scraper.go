@@ -1,6 +1,9 @@
 package scraper
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/antchfx/xpath"
 	htmlquery "github.com/antchfx/xquery/html"
 	"golang.org/x/net/html"
@@ -20,10 +23,21 @@ func xPathScraperFromQuery(query string) (*xPathScraper, error) {
 
 func (x xPathScraper) extractFromNode(n *html.Node) *extractResult {
 	nav := htmlquery.CreateXPathNavigator(n)
-	iter := x.query.Evaluate(nav).(*xpath.NodeIterator)
 	var ret []string
-	for iter.MoveNext() {
-		ret = append(ret, iter.Current().Value())
+	switch result := x.query.Evaluate(nav).(type) {
+	case *xpath.NodeIterator:
+		for result.MoveNext() {
+			ret = append(ret, result.Current().Value())
+		}
+	case string:
+		ret = append(ret, result)
+	case float64:
+		ret = append(ret, strconv.FormatFloat(result, 'f', -1, 64))
+	case bool:
+		ret = append(ret, strconv.FormatBool(result))
+	case nil:
+	default:
+		ret = append(ret, fmt.Sprint(result))
 	}
 	return &extractResult{PlainResult: &ret}
 }

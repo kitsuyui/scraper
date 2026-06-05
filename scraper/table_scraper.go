@@ -57,7 +57,7 @@ func extractTable(n *html.Node) [][]string {
 	c := map[int]map[int]*string{}
 	for i, tr := range htmlquery.Find(n, "./tr | ./tbody/tr | ./thead/tr | ./tfoot/tr") {
 		jFixed := 0
-		for _, td := range htmlquery.Find(tr, ".//th or .//td") {
+		for _, td := range htmlquery.Find(tr, ".//th | .//td") {
 			colspan, rowspan := parseColspanRowspan(td)
 			strVal := extractTextFromNodeRecursively(td)
 			for isFilled(c, i, jFixed) {
@@ -91,6 +91,21 @@ func mapTableToSliceTable(c map[int]map[int]*string, rowmax int, colmax int) (v 
 	return v
 }
 
+// maxSpan caps colspan and rowspan to prevent OOM from malformed or malicious HTML.
+// colspan=N, rowspan=M causes N*M map entries; uncapped values up to int32 max
+// would exhaust heap. Real tables almost never exceed 100 columns or rows.
+const maxSpan = 100
+
+func clampSpan(v int) int {
+	if v < 1 {
+		return 1
+	}
+	if v > maxSpan {
+		return maxSpan
+	}
+	return v
+}
+
 func parseColspanRowspan(n *html.Node) (int, int) {
 	colspan := 1
 	rowspan := 1
@@ -100,14 +115,14 @@ func parseColspanRowspan(n *html.Node) (int, int) {
 			if err != nil {
 				continue
 			}
-			colspan = int(colspanRead)
+			colspan = clampSpan(int(colspanRead))
 		}
 		if strings.ToLower(attr.Key) == "rowspan" {
 			rowspanRead, err := strconv.ParseInt(attr.Val, 10, 32)
 			if err != nil {
 				continue
 			}
-			rowspan = int(rowspanRead)
+			rowspan = clampSpan(int(rowspanRead))
 		}
 	}
 	return colspan, rowspan

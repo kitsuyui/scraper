@@ -12,6 +12,18 @@ import (
 
 var exit = os.Exit
 var createServer = server.CreateServer
+var standardOutput io.Writer = os.Stdout
+var errorOutput io.Writer = os.Stderr
+
+const (
+	exitValidateConfig = 2
+	exitServer         = 3
+	exitInputFile      = 4
+	exitOutputFile     = 5
+	exitConfigFile     = 6
+	exitScrape         = 7
+)
+
 var usage = `scraper: Swiss army knife for web scraping
 
 Usage:
@@ -28,16 +40,25 @@ Options:
  -d=<conf-dir> --conf-dir=<conf-dir>  Configuration directory for server mode [default: .].
 `
 
+func reportError(err error, exitCode int) {
+	fmt.Fprintln(errorOutput, err.Error())
+	exit(exitCode)
+}
+
 func main() {
 	opts, _ := docopt.ParseDoc(usage)
 
 	if validate, _ := opts.Bool("validate"); validate {
 		configFilepath, _ := opts.String("--config")
 		c, err := os.Open(configFilepath)
+		if err != nil {
+			reportError(err, exitConfigFile)
+			return
+		}
+		defer c.Close()
 		err = scraper.ValidateConfigFile(c)
 		if err != nil {
-			fmt.Println(err.Error())
-			exit(1)
+			reportError(err, exitValidateConfig)
 			return
 		}
 	} else if serverMode, _ := opts.Bool("server"); serverMode {
@@ -46,11 +67,12 @@ func main() {
 		confDir, _ := opts.String("--conf-dir")
 		s, err := createServer(host, port, confDir)
 		if err != nil {
-			fmt.Println(err.Error())
-			exit(1)
+			reportError(err, exitServer)
 			return
 		}
-		s.ListenAndServe()
+		if err := s.ListenAndServe(); err != nil {
+			reportError(err, exitServer)
+		}
 		return
 	} else {
 		var confFile io.Reader
@@ -58,12 +80,12 @@ func main() {
 		var output io.Writer
 
 		input = os.Stdin
-		output = os.Stdout
+		output = standardOutput
 		if inputFilepath, err := opts.String("--input"); err == nil {
 			inputFile, err := os.Open(inputFilepath)
 			if err != nil {
-				fmt.Println(err.Error())
-				exit(1)
+				reportError(err, exitInputFile)
+				return
 			}
 			defer inputFile.Close()
 			input = inputFile
@@ -72,8 +94,7 @@ func main() {
 		if outputFilepath, err := opts.String("--output"); err == nil {
 			outputFile, err := os.Create(outputFilepath)
 			if err != nil {
-				fmt.Println(err.Error())
-				exit(1)
+				reportError(err, exitOutputFile)
 				return
 			}
 			defer outputFile.Close()
@@ -83,15 +104,13 @@ func main() {
 		configFilepath, _ := opts.String("--config")
 		confFile, err := os.Open(configFilepath)
 		if err != nil {
-			fmt.Println(err.Error())
-			exit(1)
+			reportError(err, exitConfigFile)
 			return
 		}
 
 		err = scraper.ScrapeByConfFile(confFile, input, output)
 		if err != nil {
-			fmt.Println(err.Error())
-			exit(1)
+			reportError(err, exitScrape)
 			return
 		}
 	}
