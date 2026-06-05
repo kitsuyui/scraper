@@ -34,6 +34,12 @@ func main() {
 	if validate, _ := opts.Bool("validate"); validate {
 		configFilepath, _ := opts.String("--config")
 		c, err := os.Open(configFilepath)
+		if err != nil {
+			fmt.Println(err.Error())
+			exit(1)
+			return
+		}
+		defer c.Close()
 		err = scraper.ValidateConfigFile(c)
 		if err != nil {
 			fmt.Println(err.Error())
