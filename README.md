@@ -118,6 +118,27 @@ $ scraper < index.html
 ]
 ```
 
+### Behavior notes for `regex` type
+
+**First match only.** Unlike `css` and `xpath` types which return all matching nodes,
+the `regex` type returns only the **first match** found in the input text.
+
+**Capture groups.** When the pattern contains capture groups (parentheses), the `results`
+array includes the full match at index 0 followed by each capture group:
+
+```
+query: "Cat, (.*?), Snake"
+input: "Cat, Dog, Snake and Cat, Rabbit, Snake"
+
+results: ["Cat, Dog, Snake", "Dog"]
+         ^^^^^^^^^^^^^^^^^  ^^^
+         full match (idx 0)  capture group 1 (idx 1)
+```
+
+Note that only the first occurrence (`Cat, Dog, Snake`) is returned even though
+the input contains a second match (`Cat, Rabbit, Snake`).
+Use `css` or `xpath` if you need all occurrences.
+
 ## Composable
 
 Obviously these recipes are mixable.
