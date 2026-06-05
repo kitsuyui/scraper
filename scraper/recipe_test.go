@@ -60,6 +60,59 @@ func TestXPathInvalid(t *testing.T) {
 	}
 }
 
+func TestXPathScalarResults(t *testing.T) {
+	r := &recipes{
+		{
+			Type:  "xpath",
+			Query: "count(//p)",
+			Label: "paragraph-count",
+		}, {
+			Type:  "xpath",
+			Query: "string(//h1)",
+			Label: "heading",
+		}, {
+			Type:  "xpath",
+			Query: "boolean(//p)",
+			Label: "has-paragraph",
+		},
+	}
+	cr, err := r.compile()
+	if err != nil {
+		t.Fatalf("Must not be error on this recipe.")
+	}
+	input := bytes.NewBufferString(`
+<html>
+  <body>
+    <h1>Heading</h1>
+    <p>first</p>
+    <p>second</p>
+  </body>
+</html>
+`)
+	results, err := cr.extractAll(input)
+	if err != nil {
+		t.Fatalf("This is valid HTML File")
+	}
+	if len(results) != len(*r) {
+		t.Fatalf("Not match size results and recipes")
+	}
+	expects := []string{"2", "Heading", "true"}
+	for i, expect := range expects {
+		if results[i].results.PlainResult == nil {
+			t.Errorf("PlainResult is nil for %s", (*r)[i].Type)
+			continue
+		}
+		actual := *results[i].results.PlainResult
+		if len(actual) != 1 {
+			t.Errorf("Not match result count, expect 1 != result %d", len(actual))
+			continue
+		}
+		if actual[0] != expect {
+			t.Errorf("Not match scalar XPath result, expect %s != result %s", expect, actual[0])
+		}
+	}
+}
+
 func TestTableXPathInvalid(t *testing.T) {
 	_, err := (&recipe{
 		Type:  "table-xpath",
@@ -221,6 +274,66 @@ func TestBasicsTables(t *testing.T) {
 	}
 }
 
+func TestTableHeaderCells(t *testing.T) {
+	r := &recipes{{
+		Type:  "table-xpath",
+		Query: "//table",
+		Label: "table1",
+	}, {
+		Type:  "table-css",
+		Query: "table",
+		Label: "table1",
+	}}
+	cr, err := r.compile()
+	if err != nil {
+		t.Errorf("Must not be error on this recipe.")
+	}
+	input := bytes.NewBufferString(`
+<html>
+	<body>
+		<table border=1>
+		  <tr><th>Name</th><th>Score</th></tr>
+		  <tr><th>Alice</th><td>10</td></tr>
+		</table>
+	</body>
+</html>
+`)
+	results, err := cr.extractAll(input)
+	if err != nil {
+		t.Errorf("This is valid HTML File")
+	}
+	if len(results) != len(*r) {
+		t.Errorf("Not match size results and recipes")
+	}
+	expects := [][]string{
+		{"Name", "Score"},
+		{"Alice", "10"},
+	}
+	for k, testCase := range results {
+		if len(*testCase.results.TableResult) != 1 {
+			t.Errorf("Not match size table results in %s", (*r)[k].Type)
+			continue
+		}
+		for _, rows := range *testCase.results.TableResult {
+			if len(rows) != len(expects) {
+				t.Errorf("Not match size table rows in %s", (*r)[k].Type)
+				continue
+			}
+			for i, expectRow := range expects {
+				if len(rows[i]) != len(expectRow) {
+					t.Errorf("Not match size table columns in %s", (*r)[k].Type)
+					continue
+				}
+				for j, cell := range expectRow {
+					if rows[i][j] != cell {
+						t.Errorf("Not match table cell, expect %s != result %s in %s", cell, rows[i][j], (*r)[k].Type)
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestInvalidRowspanColspan(t *testing.T) {
 	r := &recipes{
 		{
@@ -277,5 +390,40 @@ func TestRegexInvalid(t *testing.T) {
 	}).compile()
 	if err == nil {
 		t.Errorf("Must be error when invalid regular expression is passed.")
+	}
+}
+
+func TestLargeColspanRowspanIsCapped(t *testing.T) {
+	r := &recipes{{
+		Type:  "table-xpath",
+		Query: "//table",
+		Label: "table1",
+	}}
+	cr, err := r.compile()
+	if err != nil {
+		t.Errorf("Must not be error on this recipe.")
+	}
+	// colspan=10000 and rowspan=10000 would create 10^8 map entries without the cap;
+	// with maxSpan=100 it creates at most 100*100=10000 entries.
+	input := bytes.NewBufferString(`<html><body>
+		<table><tr><td colspan="10000" rowspan="10000">x</td></tr></table>
+	</body></html>`)
+	results, err := cr.extractAll(input)
+	if err != nil {
+		t.Errorf("Must not error on large colspan/rowspan")
+	}
+	if len(results) != 1 {
+		t.Fatalf("Expected 1 result, got %d", len(results))
+	}
+	rows := *results[0].results.TableResult
+	if len(rows) == 0 {
+		t.Errorf("Expected non-empty table result")
+	}
+	// The cell value should be present and capped to maxSpan rows/cols
+	if len(rows) > maxSpan {
+		t.Errorf("rowspan should be capped: got %d rows, expected <= %d", len(rows), maxSpan)
+	}
+	if len(rows[0]) > maxSpan {
+		t.Errorf("colspan should be capped: got %d cols, expected <= %d", len(rows[0]), maxSpan)
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -134,6 +135,42 @@ func TestUnsupportedMethod(t *testing.T) {
 	}
 	if allow := res.Header.Get("Allow"); allow != "GET, POST, PUT, DELETE" {
 		t.Errorf("Allow header must list supported methods")
+	}
+}
+
+func TestBodySizeLimit(t *testing.T) {
+	content := `[{"type": "css", "label": "title", "query": "title"}]`
+	configPath := "/size-limit-test-config.json"
+
+	const testLimit = 100
+	limitedHandler := http.MaxBytesHandler(http.HandlerFunc(serverContext.handler), testLimit)
+	server := httptest.NewServer(limitedHandler)
+	defer server.Close()
+
+	status, _, err := putRequest(server, content, configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != http.StatusOK {
+		t.Errorf("PUT config: expected 200, got %d", status)
+	}
+
+	largeBody := strings.Repeat("x", testLimit+1)
+
+	status, _, err = postRequest(server, largeBody, configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != http.StatusRequestEntityTooLarge {
+		t.Errorf("POST over limit: expected 413, got %d", status)
+	}
+
+	status, _, err = putRequest(server, largeBody, configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != http.StatusRequestEntityTooLarge {
+		t.Errorf("PUT over limit: expected 413, got %d", status)
 	}
 }
 

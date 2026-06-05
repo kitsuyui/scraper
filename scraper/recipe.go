@@ -11,6 +11,15 @@ import (
 	"golang.org/x/net/html"
 )
 
+// Valid values for the recipe Type field.
+const (
+	TypeXPath      = "xpath"
+	TypeCSS        = "css"
+	TypeTableXPath = "table-xpath"
+	TypeTableCSS   = "table-css"
+	TypeRegex      = "regex"
+)
+
 type recipe struct {
 	Type  string `json:"type"`
 	Label string `json:"label"` // For human readability
@@ -83,7 +92,7 @@ func (rs recipes) compile() (compiledRecipes, error) {
 }
 
 func (r recipe) compile() (*compiledRecipe, error) {
-	if r.Type == "xpath" {
+	if r.Type == TypeXPath {
 		domScraper, err := xPathScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
@@ -92,7 +101,7 @@ func (r recipe) compile() (*compiledRecipe, error) {
 			recipe:     r,
 			domScraper: domScraper,
 		}, nil
-	} else if r.Type == "css" {
+	} else if r.Type == TypeCSS {
 		domScraper, err := cssSelectorScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
@@ -101,7 +110,7 @@ func (r recipe) compile() (*compiledRecipe, error) {
 			recipe:     r,
 			domScraper: domScraper,
 		}, nil
-	} else if r.Type == "table-xpath" {
+	} else if r.Type == TypeTableXPath {
 		domScraper, err := tableXPathScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
@@ -110,7 +119,7 @@ func (r recipe) compile() (*compiledRecipe, error) {
 			recipe:     r,
 			domScraper: domScraper,
 		}, nil
-	} else if r.Type == "table-css" {
+	} else if r.Type == TypeTableCSS {
 		domScraper, err := tableCSSSelectorScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
@@ -119,7 +128,7 @@ func (r recipe) compile() (*compiledRecipe, error) {
 			recipe:     r,
 			domScraper: domScraper,
 		}, nil
-	} else if r.Type == "regex" {
+	} else if r.Type == TypeRegex {
 		textScraper, err := regularExpressionScraperFromQuery(r.Query)
 		if err != nil {
 			return nil, err
@@ -129,7 +138,7 @@ func (r recipe) compile() (*compiledRecipe, error) {
 			textScraper: textScraper,
 		}, nil
 	}
-	return nil, fmt.Errorf("Unimplemented type: %s", r.Type)
+	return nil, fmt.Errorf("unimplemented recipe type %q; valid types: %s, %s, %s, %s, %s", r.Type, TypeXPath, TypeCSS, TypeTableXPath, TypeTableCSS, TypeRegex)
 }
 
 func (crs compiledRecipes) extractAll(input io.Reader) ([]scrapeResult, error) {
@@ -142,7 +151,7 @@ func (crs compiledRecipes) extractAll(input io.Reader) ([]scrapeResult, error) {
 	input = strings.NewReader(htmlText)
 	doc, err := htmlquery.Parse(input)
 	if err != nil {
-		return nil, fmt.Errorf("If this error is occurred, please tell me HTML for adding unit-test case.%s", err)
+		return nil, fmt.Errorf("failed to parse HTML: %w", err)
 	}
 	var ers []scrapeResult
 	for _, cr := range crs {
