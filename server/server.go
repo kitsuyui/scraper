@@ -96,14 +96,29 @@ func (s *ServerContext) handlerPOST(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	confFile, err := os.Create(s.confFilePathFromRequest(r))
+	targetPath := s.confFilePathFromRequest(r)
+
+	tmpFile, err := os.CreateTemp(filepath.Dir(targetPath), ".put-tmp-*")
 	if err != nil {
 		errorStatus(w, err)
 		return
 	}
-	defer confFile.Close()
-	_, err = io.Copy(confFile, r.Body)
-	if err != nil {
+	tmpPath := tmpFile.Name()
+
+	_, copyErr := io.Copy(tmpFile, r.Body)
+	closeErr := tmpFile.Close()
+	if copyErr != nil || closeErr != nil {
+		os.Remove(tmpPath)
+		if copyErr != nil {
+			errorStatus(w, copyErr)
+		} else {
+			errorStatus(w, closeErr)
+		}
+		return
+	}
+
+	if err := os.Rename(tmpPath, targetPath); err != nil {
+		os.Remove(tmpPath)
 		errorStatus(w, err)
 		return
 	}
