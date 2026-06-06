@@ -52,6 +52,10 @@ func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
 
 type recipes []recipe
 
+// compiledRecipe holds a compiled recipe ready for extraction.
+// Invariant: exactly one of domScraper and textScraper is non-nil.
+// This invariant is established by compile() and must be preserved by any
+// future constructors. extractAll panics if both are nil.
 type compiledRecipe struct {
 	domScraper  domScraper
 	textScraper textScraper
@@ -68,6 +72,9 @@ type domScraper interface {
 	extractFromNode(*html.Node) *extractResult
 }
 
+// extractResult holds the output of a single scraper execution.
+// Invariant: exactly one of PlainResult and TableResult is non-nil.
+// TableResult is set by table-* scrapers; PlainResult by all others.
 type extractResult struct {
 	PlainResult *[]string
 	TableResult *[][][]string
@@ -161,6 +168,11 @@ func (crs compiledRecipes) extractAll(input io.Reader) ([]scrapeResult, error) {
 		} else if cr.domScraper != nil {
 			er := &scrapeResult{recipe: cr.recipe, results: cr.domScraper.extractFromNode(doc)}
 			ers = append(ers, *er)
+		} else {
+			// Both scrapers nil: this violates the compiledRecipe invariant.
+			// compile() always sets exactly one; reaching here means a future
+			// constructor broke the invariant, and silent skipping would hide it.
+			panic(fmt.Sprintf("compiledRecipe invariant violation: both domScraper and textScraper are nil for recipe type %q", cr.recipe.Type))
 		}
 	}
 	return ers, nil
