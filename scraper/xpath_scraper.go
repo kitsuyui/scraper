@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/antchfx/xpath"
-	htmlquery "github.com/antchfx/xquery/html"
+	htmlquery "github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 )
 
