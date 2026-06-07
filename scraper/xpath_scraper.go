@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	htmlquery "github.com/antchfx/htmlquery"
 	"github.com/antchfx/xpath"
-	htmlquery "github.com/antchfx/xquery/html"
 	"golang.org/x/net/html"
 )
 
