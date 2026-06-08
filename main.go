@@ -91,11 +91,13 @@ func main() {
 		}
 
 		configFilepath, _ := opts.String("--config")
-		confFile, err := os.Open(configFilepath)
+		cf, err := os.Open(configFilepath)
 		if err != nil {
 			reportError(err, exitConfigFile)
 			return
 		}
+		defer cf.Close()
+		confFile = cf
 
 		if outputFilepath, err := opts.String("--output"); err == nil {
 			// Write to a temp file in the same directory, then rename on success.
