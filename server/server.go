@@ -170,6 +170,12 @@ func CreateServer(bindHost string, bindPort int, configDir string) (*http.Server
 	}
 	bindAddr := fmt.Sprintf("%s:%d", bindHost, bindPort)
 	handler := loggingMiddleware(http.MaxBytesHandler(http.HandlerFunc(sc.handler), maxBodyBytes))
-	server := &http.Server{Addr: bindAddr, Handler: handler}
+	server := &http.Server{
+		Addr:         bindAddr,
+		Handler:      handler,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
 	return server, nil
 }

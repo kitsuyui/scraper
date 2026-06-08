@@ -274,6 +274,38 @@ func TestCLIErrorPathsUseDistinctExitCodes(t *testing.T) {
 	}
 }
 
+func TestOutputFilePreservedOnScrapeError(t *testing.T) {
+	dir := t.TempDir()
+	outputFilepath := filepath.Join(dir, "output.json")
+
+	// Write initial content to the output file.
+	initial := []byte(`{"previous": "content"}`)
+	if err := os.WriteFile(outputFilepath, initial, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	// Trigger a scrape error by feeding a directory as the HTML input.
+	result := runCLI(t, []string{
+		"scraper",
+		"-c", "test_assets/config.json",
+		"-i", "/",
+		"-o", outputFilepath,
+	}, nil)
+
+	if !result.exited || result.exitCode != exitScrape {
+		t.Fatalf("expected exit with code %d, got exited=%v code=%d", exitScrape, result.exited, result.exitCode)
+	}
+
+	// The original file must not have been truncated.
+	got, err := os.ReadFile(outputFilepath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(initial) {
+		t.Errorf("output file was modified on scrape error: got %q, want %q", got, initial)
+	}
+}
+
 func TestMainCommand(t *testing.T) {
 	opts, err := docopt.ParseArgs(usage, []string{}, "")
 	if err != nil {
