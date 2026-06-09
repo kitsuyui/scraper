@@ -259,6 +259,21 @@ $ ./bin/build.sh
 $ docker run --rm -v "$(pwd)":/root -w /root tcnksm/gox sh -c "./bin/build.sh"
 ```
 
+## Development
+
+Install [lefthook](https://github.com/evilmartians/lefthook) and run the following command to set up the Git hooks:
+
+```console
+$ lefthook install
+```
+
+### Git hooks
+
+- **pre-commit**: runs `go vet ./...` to catch issues before each commit.
+- **pre-push**: runs `go vet ./...` and `go test ./...` before each push.
+
+The CI pipeline still runs the full test suite on every pull request and push to main — the hooks bring the same feedback earlier, during local development.
+
 ## LICENSE
 
 ### Source
