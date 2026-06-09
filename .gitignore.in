@@ -1,9 +1,1 @@
-#!/usr/bin/env bash
-set -euo pipefail
-cd "${0%/*}" && exec > .gitignore
-gi() { curl -L -s https://www.gitignore.io/api/"$*"; }
-# `gibo list' and `gi list'
-# gibo dump Linux
-# gibo dump Windows
-# gibo dump macOS
 gibo dump Go
