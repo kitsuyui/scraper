@@ -2,11 +2,13 @@
 coverage:
   paths:
     - coverage.out
+  acceptable: 80%
 codeToTestRatio:
   code:
     - "**/*.go"
   test:
     - "**/*_test.go"
+  acceptable: "1:0.5"
 testExecutionTime:
   if: true
 diff:
