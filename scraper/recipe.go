@@ -32,6 +32,9 @@ type scrapeResult struct {
 }
 
 func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
+	if sr.results == nil {
+		return nil, fmt.Errorf("scrapeResult.MarshalJSON: extractResult is nil")
+	}
 	if sr.results.TableResult != nil {
 		return json.Marshal(&struct {
 			recipe
@@ -40,6 +43,9 @@ func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
 			recipe:  sr.recipe,
 			Results: *sr.results.TableResult,
 		})
+	}
+	if sr.results.PlainResult == nil {
+		return nil, fmt.Errorf("scrapeResult.MarshalJSON: both TableResult and PlainResult are nil")
 	}
 	return json.Marshal(&struct {
 		recipe
