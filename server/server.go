@@ -53,10 +53,13 @@ func (s *ServerContext) handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *ServerContext) confFilePathFromRequest(r *http.Request) string {
+func (s *ServerContext) confFilePathFromRequest(r *http.Request) (string, error) {
 	// To avoid directory traversal
 	resolvedPath := filepath.Join(s.ConfigDirectory, filepath.FromSlash(path.Clean("/"+r.URL.Path)))
-	return resolvedPath
+	if filepath.Ext(resolvedPath) != ".json" {
+		return "", fmt.Errorf("only .json files are accessible")
+	}
+	return resolvedPath, nil
 }
 
 func errorStatus(w http.ResponseWriter, err error) {
@@ -77,7 +80,12 @@ func errorStatus(w http.ResponseWriter, err error) {
 
 func (s *ServerContext) handlerGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	confFile, err := os.Open(s.confFilePathFromRequest(r))
+	confPath, err := s.confFilePathFromRequest(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	confFile, err := os.Open(confPath)
 	if err != nil {
 		errorStatus(w, err)
 		return
@@ -92,7 +100,12 @@ func (s *ServerContext) handlerGET(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServerContext) handlerPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	confFile, err := os.Open(s.confFilePathFromRequest(r))
+	confPath, err := s.confFilePathFromRequest(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	confFile, err := os.Open(confPath)
 	if err != nil {
 		errorStatus(w, err)
 		return
@@ -105,7 +118,11 @@ func (s *ServerContext) handlerPOST(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	targetPath := s.confFilePathFromRequest(r)
+	targetPath, err := s.confFilePathFromRequest(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	tmpFile, err := os.CreateTemp(filepath.Dir(targetPath), ".put-tmp-*")
 	if err != nil {
@@ -135,7 +152,12 @@ func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServerContext) handlerDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	err := os.Remove(s.confFilePathFromRequest(r))
+	confPath, err := s.confFilePathFromRequest(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	err = os.Remove(confPath)
 	if err != nil {
 		errorStatus(w, err)
 		return
