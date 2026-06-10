@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	htmlquery "github.com/antchfx/xquery/html"
+	htmlquery "github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 )
 
