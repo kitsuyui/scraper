@@ -4,13 +4,34 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/kitsuyui/scraper/scraper"
 )
+
+type responseRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rr *responseRecorder) WriteHeader(code int) {
+	rr.status = code
+	rr.ResponseWriter.WriteHeader(code)
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		rec := &responseRecorder{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(rec, r)
+		log.Printf("%s %s %d %s", r.Method, r.URL.Path, rec.status, time.Since(start))
+	})
+}
 
 const maxBodyBytes = 10 * 1024 * 1024 // 10 MB
 
@@ -52,10 +73,13 @@ func (s *ServerContext) handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *ServerContext) confFilePathFromRequest(r *http.Request) string {
+func (s *ServerContext) confFilePathFromRequest(r *http.Request) (string, error) {
 	// To avoid directory traversal
 	resolvedPath := filepath.Join(s.ConfigDirectory, filepath.FromSlash(path.Clean("/"+r.URL.Path)))
-	return resolvedPath
+	if filepath.Ext(resolvedPath) != ".json" {
+		return "", fmt.Errorf("only .json files are accessible")
+	}
+	return resolvedPath, nil
 }
 
 func errorStatus(w http.ResponseWriter, err error) {
@@ -76,7 +100,12 @@ func errorStatus(w http.ResponseWriter, err error) {
 
 func (s *ServerContext) handlerGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	confFile, err := os.Open(s.confFilePathFromRequest(r))
+	confPath, err := s.confFilePathFromRequest(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	confFile, err := os.Open(confPath)
 	if err != nil {
 		errorStatus(w, err)
 		return
@@ -91,7 +120,12 @@ func (s *ServerContext) handlerGET(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServerContext) handlerPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	confFile, err := os.Open(s.confFilePathFromRequest(r))
+	confPath, err := s.confFilePathFromRequest(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	confFile, err := os.Open(confPath)
 	if err != nil {
 		errorStatus(w, err)
 		return
@@ -104,7 +138,11 @@ func (s *ServerContext) handlerPOST(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	targetPath := s.confFilePathFromRequest(r)
+	targetPath, err := s.confFilePathFromRequest(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	tmpFile, err := os.CreateTemp(filepath.Dir(targetPath), ".put-tmp-*")
 	if err != nil {
@@ -134,7 +172,12 @@ func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServerContext) handlerDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	err := os.Remove(s.confFilePathFromRequest(r))
+	confPath, err := s.confFilePathFromRequest(r)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	err = os.Remove(confPath)
 	if err != nil {
 		errorStatus(w, err)
 		return
@@ -148,7 +191,13 @@ func CreateServer(bindHost string, bindPort int, configDir string) (*http.Server
 		return nil, err
 	}
 	bindAddr := fmt.Sprintf("%s:%d", bindHost, bindPort)
-	handler := http.MaxBytesHandler(http.HandlerFunc(sc.handler), maxBodyBytes)
-	server := &http.Server{Addr: bindAddr, Handler: handler}
+	handler := loggingMiddleware(http.MaxBytesHandler(http.HandlerFunc(sc.handler), maxBodyBytes))
+	server := &http.Server{
+		Addr:         bindAddr,
+		Handler:      handler,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
 	return server, nil
 }

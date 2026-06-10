@@ -274,6 +274,45 @@ func TestBasicsTables(t *testing.T) {
 	}
 }
 
+func TestNestedTableNoLeakage(t *testing.T) {
+	r := &recipes{{
+		Type:  "table-xpath",
+		Query: "//table[not(ancestor::table)]",
+		Label: "outer",
+	}, {
+		Type:  "table-css",
+		Query: "table",
+		Label: "outer",
+	}}
+	cr, err := r.compile()
+	if err != nil {
+		t.Errorf("Must not be error on this recipe.")
+	}
+	input := bytes.NewBufferString(`
+<html>
+  <body>
+    <table>
+      <tr>
+        <td><table><tr><td>inner</td></tr></table></td>
+        <td>outer</td>
+      </tr>
+    </table>
+  </body>
+</html>
+`)
+	results, err := cr.extractAll(input)
+	if err != nil {
+		t.Errorf("This is valid HTML File")
+	}
+	for k, testCase := range results {
+		for _, rows := range *testCase.results.TableResult {
+			if len(rows) != 1 {
+				t.Errorf("Expected 1 row in outer table (no nested-table row leakage), got %d in %s", len(rows), (*r)[k].Type)
+			}
+		}
+	}
+}
+
 func TestTableHeaderCells(t *testing.T) {
 	r := &recipes{{
 		Type:  "table-xpath",
@@ -390,6 +429,28 @@ func TestRegexInvalid(t *testing.T) {
 	}).compile()
 	if err == nil {
 		t.Errorf("Must be error when invalid regular expression is passed.")
+	}
+}
+
+func TestMarshalJSONNilResults(t *testing.T) {
+	sr := &scrapeResult{
+		recipe:  recipe{Type: "css", Query: "title", Label: "title"},
+		results: nil,
+	}
+	_, err := sr.MarshalJSON()
+	if err == nil {
+		t.Errorf("MarshalJSON must return error when results is nil")
+	}
+}
+
+func TestMarshalJSONBothResultsNil(t *testing.T) {
+	sr := &scrapeResult{
+		recipe:  recipe{Type: "css", Query: "title", Label: "title"},
+		results: &extractResult{PlainResult: nil, TableResult: nil},
+	}
+	_, err := sr.MarshalJSON()
+	if err == nil {
+		t.Errorf("MarshalJSON must return error when both PlainResult and TableResult are nil")
 	}
 }
 

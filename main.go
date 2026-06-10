@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/docopt/docopt-go"
 	"github.com/kitsuyui/scraper/scraper"
@@ -77,10 +78,8 @@ func main() {
 	} else {
 		var confFile io.Reader
 		var input io.Reader
-		var output io.Writer
 
 		input = os.Stdin
-		output = standardOutput
 		if inputFilepath, err := opts.String("--input"); err == nil {
 			inputFile, err := os.Open(inputFilepath)
 			if err != nil {
@@ -91,24 +90,40 @@ func main() {
 			input = inputFile
 		}
 
-		if outputFilepath, err := opts.String("--output"); err == nil {
-			outputFile, err := os.Create(outputFilepath)
-			if err != nil {
-				reportError(err, exitOutputFile)
-				return
-			}
-			defer outputFile.Close()
-			output = outputFile
-		}
-
 		configFilepath, _ := opts.String("--config")
-		confFile, err := os.Open(configFilepath)
+		cf, err := os.Open(configFilepath)
 		if err != nil {
 			reportError(err, exitConfigFile)
 			return
 		}
+		defer cf.Close()
+		confFile = cf
 
-		err = scraper.ScrapeByConfFile(confFile, input, output)
+		if outputFilepath, err := opts.String("--output"); err == nil {
+			// Write to a temp file in the same directory, then rename on success.
+			// This prevents an existing output file from being truncated when
+			// scraping fails partway through.
+			tmpFile, err := os.CreateTemp(filepath.Dir(outputFilepath), ".scraper-output-*")
+			if err != nil {
+				reportError(err, exitOutputFile)
+				return
+			}
+			scrapeErr := scraper.ScrapeByConfFile(confFile, input, tmpFile)
+			tmpFile.Close()
+			if scrapeErr != nil {
+				os.Remove(tmpFile.Name())
+				reportError(scrapeErr, exitScrape)
+				return
+			}
+			if err := os.Rename(tmpFile.Name(), outputFilepath); err != nil {
+				os.Remove(tmpFile.Name())
+				reportError(err, exitOutputFile)
+				return
+			}
+			return
+		}
+
+		err = scraper.ScrapeByConfFile(confFile, input, standardOutput)
 		if err != nil {
 			reportError(err, exitScrape)
 			return
