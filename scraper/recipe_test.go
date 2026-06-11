@@ -2,6 +2,9 @@ package scraper
 
 import (
 	"bytes"
+	"encoding/json"
+	"io"
+	"strings"
 	"testing"
 )
 
@@ -486,5 +489,41 @@ func TestLargeColspanRowspanIsCapped(t *testing.T) {
 	}
 	if len(rows[0]) > maxSpan {
 		t.Errorf("colspan should be capped: got %d cols, expected <= %d", len(rows[0]), maxSpan)
+	}
+}
+
+func TestZeroMatchResultsAsEmptyArrayNotNull(t *testing.T) {
+	types := []struct {
+		recipeType string
+		query      string
+	}{
+		{TypeCSS, "nonexistent-tag"},
+		{TypeXPath, "//nonexistent-tag"},
+		{TypeRegex, "DEFINITELY_NOT_IN_HTML"},
+	}
+	html := bytes.NewBufferString(`<html><body><p>hello</p></body></html>`)
+	buf, _ := io.ReadAll(html)
+
+	for _, tt := range types {
+		r := &recipes{{Type: tt.recipeType, Query: tt.query, Label: "test"}}
+		cr, err := r.compile()
+		if err != nil {
+			t.Fatalf("compile failed for %s: %v", tt.recipeType, err)
+		}
+		results, err := cr.extractAll(bytes.NewReader(buf))
+		if err != nil {
+			t.Fatalf("extractAll failed for %s: %v", tt.recipeType, err)
+		}
+		jsonBytes, err := json.Marshal(&results[0])
+		if err != nil {
+			t.Fatalf("MarshalJSON failed for %s: %v", tt.recipeType, err)
+		}
+		jsonStr := string(jsonBytes)
+		if strings.Contains(jsonStr, `"results":null`) {
+			t.Errorf("%s: zero-match result marshaled as null, want []; got %s", tt.recipeType, jsonStr)
+		}
+		if !strings.Contains(jsonStr, `"results":[]`) {
+			t.Errorf("%s: zero-match result did not marshal as []; got %s", tt.recipeType, jsonStr)
+		}
 	}
 }

@@ -47,12 +47,16 @@ func (sr *scrapeResult) MarshalJSON() ([]byte, error) {
 	if sr.results.PlainResult == nil {
 		return nil, fmt.Errorf("scrapeResult.MarshalJSON: both TableResult and PlainResult are nil")
 	}
+	plainResult := *sr.results.PlainResult
+	if plainResult == nil {
+		plainResult = []string{}
+	}
 	return json.Marshal(&struct {
 		recipe
 		Results []string `json:"results"`
 	}{
 		recipe:  sr.recipe,
-		Results: *sr.results.PlainResult,
+		Results: plainResult,
 	})
 }
 
