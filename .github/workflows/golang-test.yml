@@ -41,6 +41,9 @@ jobs:
           go vet ./...
           go mod tidy
 
+      - name: Check for known vulnerabilities
+        run: go tool govulncheck ./...
+
       - name: test
         run: go test -v -cover -race -covermode=atomic -coverprofile=coverage.out ./...
 
