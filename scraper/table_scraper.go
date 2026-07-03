@@ -58,19 +58,19 @@ func extractTable(n *html.Node) [][]string {
 	for i, tr := range htmlquery.Find(n, "./tr | ./tbody/tr | ./thead/tr | ./tfoot/tr") {
 		jFixed := 0
 		for _, td := range htmlquery.Find(tr, ".//th | .//td") {
-			colspan, rowspan := parseColspanRowspan(td)
+			span := parseTableSpan(td)
 			strVal := extractTextFromNodeRecursively(td)
 			for isFilled(c, i, jFixed) {
 				jFixed++
 			}
-			editCellInRange(c, i, jFixed, colspan, rowspan, strVal)
-			if i+rowspan > rowmax {
-				rowmax = i + rowspan
+			editCellInRange(c, i, jFixed, span, strVal)
+			if i+span.rows > rowmax {
+				rowmax = i + span.rows
 			}
-			if jFixed+colspan > colmax {
-				colmax = jFixed + colspan
+			if jFixed+span.columns > colmax {
+				colmax = jFixed + span.columns
 			}
-			jFixed += colspan
+			jFixed += span.columns
 		}
 	}
 	return mapTableToSliceTable(c, rowmax, colmax)
@@ -96,6 +96,11 @@ func mapTableToSliceTable(c map[int]map[int]*string, rowmax int, colmax int) (v 
 // would exhaust heap. Real tables almost never exceed 100 columns or rows.
 const maxSpan = 100
 
+type tableSpan struct {
+	columns int
+	rows    int
+}
+
 func clampSpan(v int) int {
 	if v < 1 {
 		return 1
@@ -106,26 +111,25 @@ func clampSpan(v int) int {
 	return v
 }
 
-func parseColspanRowspan(n *html.Node) (int, int) {
-	colspan := 1
-	rowspan := 1
+func parseTableSpan(n *html.Node) tableSpan {
+	span := tableSpan{columns: 1, rows: 1}
 	for _, attr := range n.Attr {
 		if strings.ToLower(attr.Key) == "colspan" {
 			colspanRead, err := strconv.ParseInt(attr.Val, 10, 32)
 			if err != nil {
 				continue
 			}
-			colspan = clampSpan(int(colspanRead))
+			span.columns = clampSpan(int(colspanRead))
 		}
 		if strings.ToLower(attr.Key) == "rowspan" {
 			rowspanRead, err := strconv.ParseInt(attr.Val, 10, 32)
 			if err != nil {
 				continue
 			}
-			rowspan = clampSpan(int(rowspanRead))
+			span.rows = clampSpan(int(rowspanRead))
 		}
 	}
-	return colspan, rowspan
+	return span
 }
 
 func isFilled(c map[int]map[int](*string), i int, j int) bool {
@@ -145,9 +149,9 @@ func editCell(c map[int]map[int]*string, i int, j int, str string) {
 	c[i][j] = &str
 }
 
-func editCellInRange(c map[int]map[int]*string, i int, j int, colspan int, rowspan int, str string) {
-	for vi := 0; vi < rowspan; vi++ {
-		for vj := 0; vj < colspan; vj++ {
+func editCellInRange(c map[int]map[int]*string, i int, j int, span tableSpan, str string) {
+	for vi := 0; vi < span.rows; vi++ {
+		for vj := 0; vj < span.columns; vj++ {
 			editCell(c, i+vi, j+vj, str)
 		}
 	}
