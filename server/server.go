@@ -82,20 +82,49 @@ func (s *ServerContext) confFilePathFromRequest(r *http.Request) (string, error)
 	return resolvedPath, nil
 }
 
-func errorStatus(w http.ResponseWriter, err error) {
+type errorResponse struct {
+	status int
+	body   string
+	cause  string
+}
+
+func classifyError(err error) errorResponse {
 	var maxBytesErr *http.MaxBytesError
 	if errors.As(err, &maxBytesErr) {
-		http.Error(w, http.StatusText(http.StatusRequestEntityTooLarge), http.StatusRequestEntityTooLarge)
+		return errorResponse{
+			status: http.StatusRequestEntityTooLarge,
+			body:   http.StatusText(http.StatusRequestEntityTooLarge),
+			cause:  "max_bytes",
+		}
 	} else if os.IsNotExist(err) {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"Error": "The file does not exists"}`))
+		return errorResponse{
+			status: http.StatusNotFound,
+			body:   `{"Error": "The file does not exists"}`,
+			cause:  "not_found",
+		}
 	} else if os.IsPermission(err) {
-		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte(`{"Error": "Forbidden"}`))
-	} else {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"Error": "Something Wrong. Bad Request"}`))
+		return errorResponse{
+			status: http.StatusForbidden,
+			body:   `{"Error": "Forbidden"}`,
+			cause:  "permission_denied",
+		}
 	}
+	return errorResponse{
+		status: http.StatusBadRequest,
+		body:   `{"Error": "Something Wrong. Bad Request"}`,
+		cause:  "bad_request",
+	}
+}
+
+func writeErrorStatus(w http.ResponseWriter, r *http.Request, err error) {
+	resp := classifyError(err)
+	log.Printf("request failure method=%s path=%s status=%d cause=%s err=%v", r.Method, r.URL.Path, resp.status, resp.cause, err)
+	if resp.cause == "max_bytes" {
+		http.Error(w, resp.body, resp.status)
+		return
+	}
+	w.WriteHeader(resp.status)
+	w.Write([]byte(resp.body))
 }
 
 func (s *ServerContext) handlerGET(w http.ResponseWriter, r *http.Request) {
@@ -107,13 +136,13 @@ func (s *ServerContext) handlerGET(w http.ResponseWriter, r *http.Request) {
 	}
 	confFile, err := os.Open(confPath)
 	if err != nil {
-		errorStatus(w, err)
+		writeErrorStatus(w, r, err)
 		return
 	}
 	defer confFile.Close()
 	_, err = io.Copy(w, confFile)
 	if err != nil {
-		errorStatus(w, err)
+		writeErrorStatus(w, r, err)
 		return
 	}
 }
@@ -127,12 +156,12 @@ func (s *ServerContext) handlerPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	confFile, err := os.Open(confPath)
 	if err != nil {
-		errorStatus(w, err)
+		writeErrorStatus(w, r, err)
 		return
 	}
 	defer confFile.Close()
 	if err := scraper.ScrapeByConfFile(confFile, r.Body, w); err != nil {
-		errorStatus(w, err)
+		writeErrorStatus(w, r, err)
 	}
 }
 
@@ -146,7 +175,7 @@ func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 
 	tmpFile, err := os.CreateTemp(filepath.Dir(targetPath), ".put-tmp-*")
 	if err != nil {
-		errorStatus(w, err)
+		writeErrorStatus(w, r, err)
 		return
 	}
 	tmpPath := tmpFile.Name()
@@ -156,16 +185,16 @@ func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 	if copyErr != nil || closeErr != nil {
 		os.Remove(tmpPath)
 		if copyErr != nil {
-			errorStatus(w, copyErr)
+			writeErrorStatus(w, r, copyErr)
 		} else {
-			errorStatus(w, closeErr)
+			writeErrorStatus(w, r, closeErr)
 		}
 		return
 	}
 
 	if err := os.Rename(tmpPath, targetPath); err != nil {
 		os.Remove(tmpPath)
-		errorStatus(w, err)
+		writeErrorStatus(w, r, err)
 		return
 	}
 }
@@ -179,7 +208,7 @@ func (s *ServerContext) handlerDELETE(w http.ResponseWriter, r *http.Request) {
 	}
 	err = os.Remove(confPath)
 	if err != nil {
-		errorStatus(w, err)
+		writeErrorStatus(w, r, err)
 		return
 	}
 }
