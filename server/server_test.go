@@ -12,10 +12,18 @@ import (
 	"testing"
 )
 
-func TestLoggingMiddleware(t *testing.T) {
+func captureLogs(t *testing.T) *bytes.Buffer {
+	t.Helper()
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	defer log.SetOutput(os.Stderr)
+	t.Cleanup(func() {
+		log.SetOutput(os.Stderr)
+	})
+	return &buf
+}
+
+func TestLoggingMiddleware(t *testing.T) {
+	buf := captureLogs(t)
 
 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
@@ -38,6 +46,29 @@ func TestLoggingMiddleware(t *testing.T) {
 	}
 	if !strings.Contains(got, "404") {
 		t.Errorf("log line missing status: %q", got)
+	}
+}
+
+func TestFailureLoggingIncludesCause(t *testing.T) {
+	configPath := "/not-exists.json"
+	server := httptest.NewServer(loggingMiddleware(http.HandlerFunc(serverContext.handler)))
+	defer server.Close()
+
+	buf := captureLogs(t)
+	status, _, err := getRequest(server, configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", status)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "GET /not-exists.json 404") {
+		t.Errorf("access log missing request summary: %q", got)
+	}
+	if !strings.Contains(got, "cause=not_found") {
+		t.Errorf("failure log missing cause label: %q", got)
 	}
 }
 
@@ -172,7 +203,7 @@ func TestBodySizeLimit(t *testing.T) {
 	configPath := "/size-limit-test-config.json"
 
 	const testLimit = 100
-	limitedHandler := http.MaxBytesHandler(http.HandlerFunc(serverContext.handler), testLimit)
+	limitedHandler := loggingMiddleware(http.MaxBytesHandler(http.HandlerFunc(serverContext.handler), testLimit))
 	server := httptest.NewServer(limitedHandler)
 	defer server.Close()
 
@@ -186,6 +217,7 @@ func TestBodySizeLimit(t *testing.T) {
 
 	largeBody := strings.Repeat("x", testLimit+1)
 
+	buf := captureLogs(t)
 	status, _, err = postRequest(server, largeBody, configPath)
 	if err != nil {
 		t.Fatal(err)
@@ -193,13 +225,20 @@ func TestBodySizeLimit(t *testing.T) {
 	if status != http.StatusRequestEntityTooLarge {
 		t.Errorf("POST over limit: expected 413, got %d", status)
 	}
+	if !strings.Contains(buf.String(), "cause=max_bytes") {
+		t.Errorf("POST over limit: expected cause label in logs, got %q", buf.String())
+	}
 
+	buf.Reset()
 	status, _, err = putRequest(server, largeBody, configPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if status != http.StatusRequestEntityTooLarge {
 		t.Errorf("PUT over limit: expected 413, got %d", status)
+	}
+	if !strings.Contains(buf.String(), "cause=max_bytes") {
+		t.Errorf("PUT over limit: expected cause label in logs, got %q", buf.String())
 	}
 }
 
