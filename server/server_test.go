@@ -242,6 +242,56 @@ func TestBodySizeLimit(t *testing.T) {
 	}
 }
 
+func TestPutPreservesExistingConfigOnBodyLimitError(t *testing.T) {
+	content := `[{"type": "css", "label": "title", "query": "title"}]`
+	contentHTML := `<html><head><title>Yay</title></head><body><h1>dummy</h1></body></html>`
+	configPath := "/preserve-config-on-put-error.json"
+
+	const testLimit = 100
+	limitedHandler := loggingMiddleware(http.MaxBytesHandler(http.HandlerFunc(serverContext.handler), testLimit))
+	server := httptest.NewServer(limitedHandler)
+	defer server.Close()
+
+	status, _, err := putRequest(server, content, configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != http.StatusOK {
+		t.Fatalf("initial PUT: expected 200, got %d", status)
+	}
+
+	largeBody := strings.Repeat("x", testLimit+1)
+	status, _, err = putRequest(server, largeBody, configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != http.StatusRequestEntityTooLarge {
+		t.Fatalf("oversized PUT: expected 413, got %d", status)
+	}
+
+	status, body, err := getRequest(server, configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != http.StatusOK {
+		t.Fatalf("GET after failed PUT: expected 200, got %d", status)
+	}
+	if body != content {
+		t.Fatalf("GET after failed PUT: got %q, want %q", body, content)
+	}
+
+	status, body, err = postRequest(server, contentHTML, configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status != http.StatusOK {
+		t.Fatalf("POST after failed PUT: expected 200, got %d", status)
+	}
+	if !strings.Contains(body, "Yay") {
+		t.Fatalf("POST after failed PUT: expected response to use preserved config, got %q", body)
+	}
+}
+
 func postRequest(server *httptest.Server, postHTML string, postPath string) (int, string, error) {
 	b := bytes.NewBufferString(postHTML)
 	res, err := http.Post(server.URL+postPath, "application/octet-stream", b)
