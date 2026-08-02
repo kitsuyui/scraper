@@ -192,6 +192,24 @@ func (s *ServerContext) handlerPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tmpFileForValidation, err := os.Open(tmpPath)
+	if err != nil {
+		os.Remove(tmpPath)
+		writeErrorStatus(w, r, err)
+		return
+	}
+	validateErr := scraper.ValidateConfigFile(tmpFileForValidation)
+	closeValidationErr := tmpFileForValidation.Close()
+	if validateErr != nil || closeValidationErr != nil {
+		os.Remove(tmpPath)
+		if validateErr != nil {
+			writeErrorStatus(w, r, validateErr)
+		} else {
+			writeErrorStatus(w, r, closeValidationErr)
+		}
+		return
+	}
+
 	if err := os.Rename(tmpPath, targetPath); err != nil {
 		os.Remove(tmpPath)
 		writeErrorStatus(w, r, err)
