@@ -1,4 +1,4 @@
-FROM golang:1.26.0-alpine3.23 AS builder
+FROM golang:1.27.2-alpine3.23 AS builder
 WORKDIR /workdir
 COPY ./ /workdir
 RUN go install
