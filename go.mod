@@ -7,7 +7,7 @@ toolchain go1.26.4
 require (
 	github.com/andybalholm/cascadia v1.3.3
 	github.com/antchfx/htmlquery v1.3.5
-	github.com/antchfx/xpath v1.3.6
+	github.com/antchfx/xpath v1.3.9
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	golang.org/x/net v0.56.0
 )
