@@ -1,10 +1,10 @@
-FROM golang:1.27.2-alpine3.23 AS builder
+FROM golang:1.27.4-alpine3.23 AS builder
 WORKDIR /workdir
 COPY ./ /workdir
 RUN go install
 RUN CGO_ENABLED=0 go build -a -installsuffix cgo -o /workdir/bin/scraper
 
-FROM alpine:3.23
+FROM alpine:3.24
 RUN mkdir -p /root/server-config
 COPY --from=builder /workdir/bin/scraper /bin/scraper
 ENTRYPOINT ["/bin/scraper", "server"]
